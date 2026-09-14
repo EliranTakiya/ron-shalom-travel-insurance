@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -31,7 +32,8 @@ export default function Header() {
       if (!element) return;
 
       const header = document.querySelector("header");
-      const headerHeight = header?.getBoundingClientRect().height || 0;
+      const headerHeight =
+        header?.getBoundingClientRect().height || 0;
 
       const elementTop =
         element.getBoundingClientRect().top + window.scrollY;
@@ -67,6 +69,7 @@ export default function Header() {
           </div>
         </button>
 
+        {/* Desktop menu */}
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
           <button
             type="button"
@@ -99,6 +102,7 @@ export default function Header() {
           >
             שאלות נפוצות
           </button>
+
           <button
             type="button"
             onClick={() => goToSection("contact")}
@@ -108,6 +112,7 @@ export default function Header() {
           </button>
         </nav>
 
+        {/* Mobile menu button */}
         <button
           type="button"
           onClick={() => setMenuOpen((prev) => !prev)}
@@ -119,17 +124,19 @@ export default function Header() {
         </button>
       </div>
 
+      {/* Mobile menu */}
       <div
-        className={`overflow-hidden transition-all duration-500 ease-in-out md:hidden ${menuOpen
-          ? "max-h-96 opacity-100"
-          : "max-h-0 opacity-0"
-          }`}
+        className={`overflow-hidden transition-all duration-500 ease-in-out md:hidden ${
+          menuOpen
+            ? "max-h-96 opacity-100"
+            : "max-h-0 opacity-0"
+        }`}
       >
         <nav className="border-t bg-white">
           <button
             type="button"
             onClick={goHome}
-            className="w-full border-b px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
+            className="w-full cursor-pointer border-b px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
           >
             דף הבית
           </button>
@@ -137,7 +144,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => goToSection("about")}
-            className="w-full border-b px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
+            className="w-full cursor-pointer border-b px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
           >
             אודות
           </button>
@@ -145,15 +152,24 @@ export default function Header() {
           <button
             type="button"
             onClick={() => goToSection("recommendations")}
-            className="w-full border-b px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
+            className="w-full cursor-pointer border-b px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
           >
             לקוחות ממליצים
+          </button>
+
+          {/* שאלות נפוצות - נוסף למובייל */}
+          <button
+            type="button"
+            onClick={() => goToSection("faq")}
+            className="w-full cursor-pointer border-b px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
+          >
+            שאלות נפוצות
           </button>
 
           <button
             type="button"
             onClick={() => goToSection("contact")}
-            className="w-full px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
+            className="w-full cursor-pointer px-6 py-4 text-right font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
           >
             צור קשר
           </button>
@@ -162,3 +178,4 @@ export default function Header() {
     </header>
   );
 }
+
