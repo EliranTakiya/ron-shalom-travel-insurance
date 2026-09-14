@@ -94,6 +94,13 @@ export default function Header() {
 
           <button
             type="button"
+            onClick={() => goToSection("faq")}
+            className="cursor-pointer font-medium text-gray-700 transition hover:text-blue-700"
+          >
+            שאלות נפוצות
+          </button>
+          <button
+            type="button"
             onClick={() => goToSection("contact")}
             className="cursor-pointer font-medium text-gray-700 transition hover:text-blue-700"
           >
@@ -114,8 +121,8 @@ export default function Header() {
 
       <div
         className={`overflow-hidden transition-all duration-500 ease-in-out md:hidden ${menuOpen
-            ? "max-h-96 opacity-100"
-            : "max-h-0 opacity-0"
+          ? "max-h-96 opacity-100"
+          : "max-h-0 opacity-0"
           }`}
       >
         <nav className="border-t bg-white">

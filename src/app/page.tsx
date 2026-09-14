@@ -1484,6 +1484,152 @@ export default function Home() {
 
       </section>
 
+      {/* ================= שאלות נפוצות ================= */}
+      <section
+        id="faq"
+        className="mx-auto mt-16 w-full max-w-5xl scroll-mt-24 px-4 pb-8"
+      >
+        <div className="text-center">
+          <div className="mb-3 text-sm font-bold text-blue-600">
+            שאלות ותשובות
+          </div>
+
+          <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            שאלות נפוצות
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-gray-600">
+            ריכזנו עבורכם תשובות לשאלות הנפוצות ביותר בנושא ביטוח נסיעות לחו״ל.
+          </p>
+        </div>
+
+        <div className="mt-10 space-y-4">
+
+          <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-gray-900 md:p-6">
+              <span>מה כולל ביטוח נסיעות לחו״ל?</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600 transition-transform duration-200 group-open:rotate-45">
+                +
+              </span>
+            </summary>
+
+            <div className="border-t border-gray-100 px-5 pb-6 pt-4 text-sm leading-7 text-gray-600 md:px-6">
+              ביטוח נסיעות לחו״ל יכול לכלול כיסויים שונים בהתאם לתוכנית ולחברת
+              הביטוח, כגון הוצאות רפואיות, כבודה, ביטול או קיצור נסיעה והרחבות
+              נוספות. מומלץ לבדוק את תנאי הפוליסה והכיסויים לפני הרכישה.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-gray-900 md:p-6">
+              <span>האם כל נוסע צריך ביטוח?</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600 transition-transform duration-200 group-open:rotate-45">
+                +
+              </span>
+            </summary>
+
+            <div className="border-t border-gray-100 px-5 pb-6 pt-4 text-sm leading-7 text-gray-600 md:px-6">
+              מומלץ להתאים את הביטוח לכל אחד מהנוסעים בהתאם לגילו, מצבו ולצרכים
+              שלו. בעת מילוי הטופס באתר ניתן להזין את מספר הנוסעים ואת גיליהם.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-gray-900 md:p-6">
+              <span>האם אפשר להוסיף הרחבות לביטוח?</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600 transition-transform duration-200 group-open:rotate-45">
+                +
+              </span>
+            </summary>
+
+            <div className="border-t border-gray-100 px-5 pb-6 pt-4 text-sm leading-7 text-gray-600 md:px-6">
+              כן. בהתאם לתוכנית הביטוח ולחברה ניתן לבחור הרחבות שונות, כגון כבודה,
+              הריון, ספורט אתגרי, סקי, מצב רפואי קיים וביטול או קיצור נסיעה.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-gray-900 md:p-6">
+              <span>מה עושים במקרה חירום רפואי בחו״ל?</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600 transition-transform duration-200 group-open:rotate-45">
+                +
+              </span>
+            </summary>
+
+            <div className="border-t border-gray-100 px-5 pb-6 pt-4 text-sm leading-7 text-gray-600 md:px-6">
+              במקרה חירום יש לפנות לקבלת טיפול רפואי בהתאם למצב ולפעול לפי
+              ההנחיות של חברת הביטוח. חשוב לשמור מסמכים, סיכומים רפואיים וקבלות
+              הקשורים לטיפול.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-gray-900 md:p-6">
+              <span>האם אפשר לבטח מצב רפואי קיים?</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600 transition-transform duration-200 group-open:rotate-45">
+                +
+              </span>
+            </summary>
+
+            <div className="border-t border-gray-100 px-5 pb-6 pt-4 text-sm leading-7 text-gray-600 md:px-6">
+              בחלק מתוכניות הביטוח קיימת אפשרות להרחבה עבור מצב רפואי קיים,
+              בכפוף לתנאי חברת הביטוח, להצהרה הרפואית ולתנאי הפוליסה.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-gray-900 md:p-6">
+              <span>מתי כדאי לרכוש ביטוח נסיעות?</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600 transition-transform duration-200 group-open:rotate-45">
+                +
+              </span>
+            </summary>
+
+            <div className="border-t border-gray-100 px-5 pb-6 pt-4 text-sm leading-7 text-gray-600 md:px-6">
+              מומלץ להסדיר את ביטוח הנסיעות לפני היציאה מהארץ ולוודא שתאריכי
+              הביטוח תואמים את תקופת הנסיעה המתוכננת.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-gray-900 md:p-6">
+              <span>האם אפשר לבטח ילדים ותינוקות?</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600 transition-transform duration-200 group-open:rotate-45">
+                +
+              </span>
+            </summary>
+
+            <div className="border-t border-gray-100 px-5 pb-6 pt-4 text-sm leading-7 text-gray-600 md:px-6">
+              כן. ניתן להזין באתר את מספר המבוגרים, הילדים והתינוקות ולבחון את
+              אפשרויות הביטוח בהתאם לגיל ולתנאי התוכנית.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-gray-900 md:p-6">
+              <span>איך בוחרים את הביטוח המתאים לי?</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600 transition-transform duration-200 group-open:rotate-45">
+                +
+              </span>
+            </summary>
+
+            <div className="border-t border-gray-100 px-5 pb-6 pt-4 text-sm leading-7 text-gray-600 md:px-6">
+              מתחילים בהזנת פרטי הנסיעה, הנוסעים וההרחבות הרצויות. לאחר מכן ניתן
+              להשוות בין האפשרויות המוצגות ולבחור את התוכנית המתאימה לכם בהתאם
+              לכיסויים, למחיר ולתנאי הפוליסה.
+            </div>
+          </details>
+
+        </div>
+      </section>
       {/* =========================
           צור קשר
       ========================= */}
