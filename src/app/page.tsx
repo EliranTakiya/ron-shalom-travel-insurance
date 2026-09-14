@@ -1638,106 +1638,208 @@ export default function Home() {
         id="contact"
         className="mx-auto mt-4 w-full max-w-6xl scroll-mt-24 px-4 pb-16"
       >
+        <div className="overflow-hidden rounded-3xl bg-cyan-100 shadow-xl">
 
-        <div className="rounded-3xl bg-cyan-100 p-6 shadow-xl md:p-10">
-
-          <div className="mb-8 text-center">
+          {/* כותרת */}
+          <div className="px-6 pt-8 text-center md:px-10 md:pt-10">
+            <div className="mb-3 text-sm font-bold text-cyan-700">
+              אנחנו כאן בשבילכם
+            </div>
 
             <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
               צור קשר
             </h2>
 
-            <p className="mt-3 text-gray-600">
-              לסגירת ביטוח דרך נציג השאירו פרטים ונחזור אליכם
+            <p className="mx-auto mt-3 max-w-2xl text-gray-600">
+              לסגירת ביטוח דרך נציג או לכל שאלה בנושא ביטוח נסיעות,
+              השאירו פרטים ונחזור אליכם.
             </p>
-
           </div>
 
-          <form className="mx-auto max-w-3xl">
+          <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-stretch">
 
-            <div className="grid gap-5 md:grid-cols-2">
+            {/* פרטי קשר */}
+            <div className="flex h-full flex-col">
 
-              <div>
+              <h3 className="text-2xl font-bold text-gray-900">
+                צריכים עזרה?
+              </h3>
 
-                <label className="mb-2 block text-right font-medium text-gray-700">
-                  שם מלא
-                </label>
+              <p className="mt-3 leading-7 text-gray-600">
+                רוצים להתייעץ לפני הנסיעה או לקבל עזרה בבחירת הביטוח?
+                אנחנו כאן כדי לעזור.
+              </p>
 
-                <input
-                  type="text"
-                  placeholder="הקלידו שם מלא"
-                  className="w-full rounded-xl border border-white bg-white px-4 py-3 text-right outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
-                />
+              <div className="mt-7 space-y-4">
+
+                {/* טלפון */}
+                <a
+                  href="tel:0544601269"
+                  className="flex cursor-pointer items-center gap-4 rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-2xl">
+                    📞
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-gray-500">
+                      התקשרו אלינו
+                    </div>
+
+                    <div className="font-bold text-gray-900">
+                      054-4601269
+                    </div>
+                  </div>
+                </a>
+
+                {/* אימייל */}
+                <a
+                  href="mailto:ronshalom.jr@gmail.com"
+                  className="flex cursor-pointer items-center gap-4 rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-2xl">
+                    ✉️
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-gray-500">
+                      אימייל
+                    </div>
+
+                    <div className="font-bold text-gray-900">
+                      ronshalom.jr@gmail.com
+                    </div>
+                  </div>
+                </a>
 
               </div>
 
-              <div>
+              <div className="mt-7 grid grid-cols-3 gap-3">
+                <div className="rounded-2xl bg-white/80 p-4 text-center shadow-sm">
+                  <div className="text-2xl">🛡️</div>
+                  <div className="mt-2 text-sm font-bold text-gray-800">
+                    שירות אישי
+                  </div>
+                </div>
 
-                <label className="mb-2 block text-right font-medium text-gray-700">
-                  טלפון
-                </label>
+                <div className="rounded-2xl bg-white/80 p-4 text-center shadow-sm">
+                  <div className="text-2xl">⚡</div>
+                  <div className="mt-2 text-sm font-bold text-gray-800">
+                    מענה מהיר
+                  </div>
+                </div>
 
-                <input
-                  type="tel"
-                  placeholder="050-0000000"
-                  className="w-full rounded-xl border border-white bg-white px-4 py-3 text-right outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
-                />
-
+                <div className="rounded-2xl bg-white/80 p-4 text-center shadow-sm">
+                  <div className="text-2xl">✈️</div>
+                  <div className="mt-2 text-sm font-bold text-gray-800">
+                    נוסעים בראש שקט
+                  </div>
+                </div>
               </div>
+              {/* WhatsApp CTA */}
+              <a
+                href="https://wa.me/972544601269"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-green-500 px-6 py-4 text-lg font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-green-600 hover:shadow-xl lg:mt-auto lg:mb-8"
+              >
+                💬 דברו איתנו ב־WhatsApp
+              </a>
 
             </div>
 
-            <div className="mt-5">
+            {/* טופס */}
+            <div className="rounded-3xl bg-white p-6 shadow-md md:p-8">
 
-              <label className="mb-2 block text-right font-medium text-gray-700">
-                הודעה
-              </label>
+              <h3 className="text-xl font-bold text-gray-900">
+                השאירו פרטים
+              </h3>
 
-              <textarea
-                rows={5}
-                placeholder="כתבו לנו הודעה..."
-                className="w-full resize-none rounded-xl border border-white bg-white px-4 py-3 text-right outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
-              />
+              <p className="mt-2 text-sm text-gray-500">
+                מלאו את הפרטים ונציג יחזור אליכם.
+              </p>
+
+              <form className="mt-6">
+
+                <div className="grid gap-5 md:grid-cols-2">
+
+                  <div>
+                    <label className="mb-2 block text-right font-medium text-gray-700">
+                      שם מלא
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="הקלידו שם מלא"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right outline-none transition focus:border-cyan-400 focus:bg-white focus:ring-2 focus:ring-cyan-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-right font-medium text-gray-700">
+                      טלפון
+                    </label>
+
+                    <input
+                      type="tel"
+                      placeholder="050-0000000"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right outline-none transition focus:border-cyan-400 focus:bg-white focus:ring-2 focus:ring-cyan-100"
+                    />
+                  </div>
+
+                </div>
+
+                <div className="mt-5">
+                  <label className="mb-2 block text-right font-medium text-gray-700">
+                    הודעה
+                  </label>
+
+                  <textarea
+                    rows={5}
+                    placeholder="כתבו לנו הודעה..."
+                    className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right outline-none transition focus:border-cyan-400 focus:bg-white focus:ring-2 focus:ring-cyan-100"
+                  />
+                </div>
+
+                <div className="mt-5 w-full text-right">
+
+                  <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 cursor-pointer accent-cyan-500"
+                    />
+
+                    <span>
+                      אני מסכים/ה ל{" "}
+
+                      <a
+                        href="/privacy"
+                        className="font-medium text-cyan-700 hover:underline"
+                      >
+                        מדיניות הפרטיות
+                      </a>
+
+                      {" "}של האתר
+                    </span>
+
+                  </label>
+
+                </div>
+
+                <button
+                  type="submit"
+                  className="mt-6 w-full cursor-pointer rounded-xl bg-cyan-600 py-4 text-lg font-bold text-white transition hover:bg-cyan-700"
+                >
+                  שליחה
+                </button>
+
+              </form>
 
             </div>
 
-            <div className="mt-5 w-full text-right">
-
-              <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-700">
-
-                <span>
-                  אני מסכים/ה ל{" "}
-
-                  <a
-                    href="/privacy"
-                    className="font-medium text-pink-600 hover:underline"
-                  >
-                    מדיניות הפרטיות
-                  </a>
-
-                  {" "}של האתר
-                </span>
-
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 cursor-pointer accent-pink-500"
-                />
-
-              </label>
-
-            </div>
-
-            <button
-              type="submit"
-              className="mt-6 w-full rounded-xl bg-pink-500 py-4 text-lg font-bold text-white transition hover:bg-pink-600"
-            >
-              שליחה
-            </button>
-
-          </form>
-
+          </div>
         </div>
-
       </section>
 
       {/* =========================
