@@ -24,26 +24,26 @@ export default function Header() {
 
   const goToSection = (id: string) => {
     setMenuOpen(false);
-  
+
     if (pathname === "/") {
       const element = document.getElementById(id);
-  
+
       if (!element) return;
-  
+
       const header = document.querySelector("header");
       const headerHeight = header?.getBoundingClientRect().height || 0;
-  
+
       const elementTop =
         element.getBoundingClientRect().top + window.scrollY;
-  
+
       window.scrollTo({
         top: elementTop - headerHeight - 10,
         behavior: "smooth",
       });
-  
+
       return;
     }
-  
+
     router.push(`/#${id}`);
   };
 
@@ -71,7 +71,7 @@ export default function Header() {
           <button
             type="button"
             onClick={goHome}
-            className="font-medium text-gray-700 transition hover:text-blue-700"
+            className="cursor-pointer font-medium text-gray-700 transition hover:text-blue-700"
           >
             דף הבית
           </button>
@@ -79,7 +79,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => goToSection("about")}
-            className="font-medium text-gray-700 transition hover:text-blue-700"
+            className="cursor-pointer font-medium text-gray-700 transition hover:text-blue-700"
           >
             אודות
           </button>
@@ -87,7 +87,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => goToSection("recommendations")}
-            className="font-medium text-gray-700 transition hover:text-blue-700"
+            className="cursor-pointer font-medium text-gray-700 transition hover:text-blue-700"
           >
             לקוחות ממליצים
           </button>
@@ -95,7 +95,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => goToSection("contact")}
-            className="font-medium text-gray-700 transition hover:text-blue-700"
+            className="cursor-pointer font-medium text-gray-700 transition hover:text-blue-700"
           >
             צור קשר
           </button>
@@ -113,11 +113,10 @@ export default function Header() {
       </div>
 
       <div
-        className={`overflow-hidden transition-all duration-500 ease-in-out md:hidden ${
-          menuOpen
+        className={`overflow-hidden transition-all duration-500 ease-in-out md:hidden ${menuOpen
             ? "max-h-96 opacity-100"
             : "max-h-0 opacity-0"
-        }`}
+          }`}
       >
         <nav className="border-t bg-white">
           <button

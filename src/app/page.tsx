@@ -1210,6 +1210,142 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ================= אודות ================= */}
+      <section
+        id="about"
+        className="mx-auto mt-16 w-full max-w-6xl scroll-mt-24 px-4 pb-8"
+      >
+        <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
+          <div className="grid md:grid-cols-2">
+
+            {/* תמונה */}
+            <div className="relative min-h-[320px] overflow-hidden md:min-h-[500px]">
+              <img
+                src="/airplane.jpg"
+                alt="סוכנות רון שלום - ביטוח נסיעות לחו״ל"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+              <div className="absolute bottom-0 right-0 left-0 p-8 text-white md:p-10">
+                <div className="mb-3 inline-block rounded-full bg-white/20 px-4 py-2 text-sm font-bold backdrop-blur">
+                  ✈️ נוסעים בראש שקט
+                </div>
+
+                <h3 className="text-3xl font-extrabold leading-tight md:text-4xl">
+                  הביטוח שלכם,
+                  <br />
+                  השקט הנפשי שלנו
+                </h3>
+              </div>
+            </div>
+
+            {/* תוכן */}
+            <div className="flex flex-col justify-center p-7 md:p-10 lg:p-12">
+
+              <div className="mb-3 text-sm font-bold text-blue-600">
+                אודות סוכנות רון שלום
+              </div>
+
+              <h2 className="text-3xl font-extrabold leading-tight text-gray-900 md:text-4xl">
+                הדרך החכמה לבחור
+                <br />
+                ביטוח נסיעות לחו״ל
+              </h2>
+
+              <p className="mt-5 text-base leading-8 text-gray-600 md:text-lg">
+                אנחנו מאמינים שביטוח נסיעות לחו״ל צריך להיות פשוט, ברור
+                ומתאים באמת לצרכים שלכם.
+              </p>
+
+              <p className="mt-3 text-base leading-8 text-gray-600">
+                באמצעות המערכת שלנו תוכלו להשוות בין אפשרויות ביטוח שונות,
+                לבחון את הכיסויים הרלוונטיים עבורכם ולקבל החלטה מושכלת
+                לפני הנסיעה.
+              </p>
+
+              {/* יתרונות */}
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-md">
+                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-2xl">
+                    🔎
+                  </div>
+
+                  <h3 className="font-bold text-gray-900">
+                    השוואה פשוטה
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
+                    לראות את האפשרויות במקום אחד ולבחור את הביטוח שמתאים לכם.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-md">
+                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-2xl">
+                    🛡️
+                  </div>
+
+                  <h3 className="font-bold text-gray-900">
+                    כיסויים מותאמים
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
+                    לבחור את ההרחבות והכיסויים הרלוונטיים בהתאם לאופי הנסיעה.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-md">
+                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-purple-100 text-2xl">
+                    👨‍💼
+                  </div>
+
+                  <h3 className="font-bold text-gray-900">
+                    שירות אישי
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
+                    סוכנות ביטוח שמלווה אתכם ומעמידה את השירות במרכז.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-md">
+                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-2xl">
+                    ✈️
+                  </div>
+
+                  <h3 className="font-bold text-gray-900">
+                    נוסעים בראש שקט
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
+                    מתחילים את החופשה בידיעה שבחרתם ביטוח שמתאים לנסיעה שלכם.
+                  </p>
+                </div>
+
+              </div>
+
+              {/* כפתור */}
+              <div className="mt-8">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.scrollTo({
+                      top: 0,
+                      behavior: "smooth",
+                    });
+                  }}
+                  className="rounded-xl bg-blue-600 px-7 py-3.5 text-base font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl"
+                >
+                  להשוואת ביטוח נסיעות ✈️
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
       {/* =========================
           לקוחות ממליצים
       ========================= */}
