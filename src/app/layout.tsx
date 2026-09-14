@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Rubik } from "next/font/google";
 import "./globals.css";
-
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import AccessibilityButton from "@/components/AccessibilityButton";
 
@@ -66,7 +66,10 @@ export default function RootLayout({
         >
             <body className={`${rubik.variable} min-h-full flex flex-col`}>
                 <Header />
-                {children}
+                <main className="flex-1">
+                    {children}
+                </main>
+                <Footer />
                 <AccessibilityButton />
             </body>
         </html>
