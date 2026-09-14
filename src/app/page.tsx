@@ -40,6 +40,9 @@ export default function Home() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const STORAGE_KEY = "ron-shalom-trip-data";
 
+  const [contactStatus, setContactStatus] = useState("");
+  const [contactSending, setContactSending] = useState(false);
+
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem(STORAGE_KEY);
@@ -1759,8 +1762,66 @@ export default function Home() {
                 מלאו את הפרטים ונציג יחזור אליכם.
               </p>
 
-              <form className="mt-6">
 
+              <form
+                className="mt-6"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+
+                  const form = e.currentTarget;
+                  const formData = new FormData(form);
+
+                  const name = String(formData.get("name") || "").trim();
+                  const phone = String(formData.get("phone") || "").trim();
+                  const message = String(formData.get("message") || "").trim();
+                  const privacy = formData.get("privacy");
+
+                  if (!name || !phone || !message) {
+                    setContactStatus("נא למלא את כל השדות.");
+                    return;
+                  }
+
+                  if (!privacy) {
+                    setContactStatus("יש לאשר את מדיניות הפרטיות.");
+                    return;
+                  }
+
+                  setContactSending(true);
+                  setContactStatus("");
+
+                  try {
+                    const response = await fetch("/api/contact", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        name,
+                        phone,
+                        message,
+                      }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                      throw new Error(data.error || "אירעה שגיאה בשליחה");
+                    }
+
+                    setContactStatus("ההודעה נשלחה בהצלחה! נחזור אליכם בהקדם.");
+                    form.reset();
+
+                    window.alert("✅ ההודעה נשלחה בהצלחה!\nנחזור אליכם בהקדם.");
+                  } catch (error) {
+                    console.error(error);
+                    setContactStatus(
+                      "אירעה שגיאה בשליחת ההודעה. נסו שוב בעוד רגע."
+                    );
+                  } finally {
+                    setContactSending(false);
+                  }
+                }}
+              >
                 <div className="grid gap-5 md:grid-cols-2">
 
                   <div>
@@ -1770,6 +1831,7 @@ export default function Home() {
 
                     <input
                       type="text"
+                      name="name"
                       placeholder="הקלידו שם מלא"
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right outline-none transition focus:border-cyan-400 focus:bg-white focus:ring-2 focus:ring-cyan-100"
                     />
@@ -1782,6 +1844,7 @@ export default function Home() {
 
                     <input
                       type="tel"
+                      name="phone"
                       placeholder="050-0000000"
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right outline-none transition focus:border-cyan-400 focus:bg-white focus:ring-2 focus:ring-cyan-100"
                     />
@@ -1796,6 +1859,7 @@ export default function Home() {
 
                   <textarea
                     rows={5}
+                    name="message"
                     placeholder="כתבו לנו הודעה..."
                     className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right outline-none transition focus:border-cyan-400 focus:bg-white focus:ring-2 focus:ring-cyan-100"
                   />
@@ -1807,6 +1871,7 @@ export default function Home() {
 
                     <input
                       type="checkbox"
+                      name="privacy"
                       className="h-4 w-4 cursor-pointer accent-cyan-500"
                     />
 
@@ -1829,12 +1894,21 @@ export default function Home() {
 
                 <button
                   type="submit"
-                  className="mt-6 w-full cursor-pointer rounded-xl bg-cyan-600 py-4 text-lg font-bold text-white transition hover:bg-cyan-700"
+                  disabled={contactSending}
+                  className="mt-6 w-full cursor-pointer rounded-xl bg-cyan-600 py-4 text-lg font-bold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  שליחה
+                  {contactSending ? "שולח..." : "שליחה"}
                 </button>
 
+                {contactStatus && (
+                  <div className="mt-4 rounded-xl bg-cyan-50 px-4 py-3 text-center text-sm font-medium text-cyan-800">
+                    {contactStatus}
+                  </div>
+                )}
+
               </form>
+
+
 
             </div>
 
