@@ -142,17 +142,17 @@ export default function Home() {
 useEffect(() => {
   if (departure && returnDate) {
     setTimeout(() => {
-      const button = document.getElementById("continue-to-passengers");
+      const bottom = document.getElementById("trip-details-bottom");
 
-      if (!button) return;
+      if (!bottom) return;
 
-      const rect = button.getBoundingClientRect();
+      const rect = bottom.getBoundingClientRect();
 
       window.scrollTo({
-        top: window.scrollY + rect.top - window.innerHeight * 0.65,
+        top: window.scrollY + rect.top - window.innerHeight + 30,
         behavior: "smooth",
       });
-    }, 100);
+    }, 150);
   }
 }, [departure, returnDate]);
 
@@ -1231,7 +1231,9 @@ useEffect(() => {
             )}
 
           </div>
-        </div>
+               </div>
+
+        <div id="trip-details-bottom" />
       </section>
 
       {/* ================= אודות ================= */}
