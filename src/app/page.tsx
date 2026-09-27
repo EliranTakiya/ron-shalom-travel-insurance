@@ -139,12 +139,18 @@ export default function Home() {
 
   // גלילה אוטומטית לכפתור "המשך לנוסעים"
   // מיד לאחר בחירת תאריך החזרה
-  useEffect(() => {
+useEffect(() => {
   if (departure && returnDate) {
     setTimeout(() => {
-      document.getElementById("continue-to-passengers")?.scrollIntoView({
+      const button = document.getElementById("continue-to-passengers");
+
+      if (!button) return;
+
+      const rect = button.getBoundingClientRect();
+
+      window.scrollTo({
+        top: window.scrollY + rect.top - window.innerHeight * 0.65,
         behavior: "smooth",
-        block: "end",
       });
     }, 100);
   }
