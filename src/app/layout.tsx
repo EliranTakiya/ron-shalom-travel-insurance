@@ -22,6 +22,7 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
+    metadataBase: new URL("https://ron-shalom-travel-insurance.vercel.app/"),
     title: "סוכנות רון שלום",
     description: "השוואת מחירי ביטוח נסיעות לחו״ל",
 

@@ -7,6 +7,7 @@ import SearchForm from "@/components/SearchForm";
 import PassengerForm from "@/components/PassengerForm";
 import AddonsForm from "@/components/AddonsForm";
 // import AccessibilityButton from "@/components/AccessibilityButton";
+
 export default function Home() {
   const router = useRouter();
 
@@ -136,6 +137,19 @@ export default function Home() {
     club,
   ]);
 
+  // גלילה אוטומטית לכפתור "המשך לנוסעים"
+  // מיד לאחר בחירת תאריך החזרה
+  useEffect(() => {
+  if (departure && returnDate) {
+    setTimeout(() => {
+      document.getElementById("continue-to-passengers")?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }, 100);
+  }
+}, [departure, returnDate]);
+
   const resetTrip = () => {
     const confirmed = window.confirm(
       "האם אתם בטוחים שברצונכם לאפס את כל הבחירות ולהתחיל מחדש?"
@@ -170,6 +184,7 @@ export default function Home() {
       behavior: "smooth",
     });
   };
+
   const tabs = [
     { id: 1, title: "לאן נוסעים?", icon: "" },
     { id: 2, title: "מתי נוסעים?", icon: "" },
@@ -510,10 +525,11 @@ export default function Home() {
         </div>
 
         <div
-          className={`overflow-hidden transition-all duration-500 ease-in-out md:hidden ${menuOpen
+          className={`overflow-hidden transition-all duration-500 ease-in-out md:hidden ${
+            menuOpen
               ? "max-h-96 opacity-100"
               : "max-h-0 opacity-0"
-            }`}
+          }`}
         >
           <nav className="border-t bg-white">
 
@@ -611,14 +627,6 @@ export default function Home() {
             פרטי הנסיעה
           </h2>
 
-          {/* <button
-  type="button"
-  onClick={resetTrip}
-  className="mt-4 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-bold text-gray-600 shadow-sm transition hover:border-red-300 hover:bg-red-50 hover:text-red-600"
->
-  ↺ איפוס בחירות והתחלה מחדש
-</button> */}
-
           <p className="mt-2 text-gray-500">
             מלאו את הפרטים ונמצא עבורכם את הביטוח המתאים
           </p>
@@ -644,10 +652,11 @@ export default function Home() {
                   key={tab.id}
                   type="button"
                   onClick={() => handleTabClick(tab.id)}
-                  className={`relative flex min-h-[90px] flex-col items-center justify-center rounded-xl border p-3 transition-all duration-200 active:scale-[0.98] ${active
-                    ? "border-blue-600 bg-blue-600 text-white shadow-lg"
-                    : "border-gray-200 bg-white text-gray-600 shadow-sm hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md"
-                    }`}
+                  className={`relative flex min-h-[90px] flex-col items-center justify-center rounded-xl border p-3 transition-all duration-200 active:scale-[0.98] ${
+                    active
+                      ? "border-blue-600 bg-blue-600 text-white shadow-lg"
+                      : "border-gray-200 bg-white text-gray-600 shadow-sm hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md"
+                  }`}
                 >
 
                   <div className="flex items-center gap-2">
@@ -658,10 +667,11 @@ export default function Home() {
 
                     {done && (
                       <span
-                        className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${active
-                          ? "bg-white text-green-600"
-                          : "bg-green-500 text-white"
-                          }`}
+                        className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${
+                          active
+                            ? "bg-white text-green-600"
+                            : "bg-green-500 text-white"
+                        }`}
                       >
                         ✓
                       </span>
@@ -747,10 +757,11 @@ export default function Home() {
                         });
                       }, 100);
                     }}
-                    className={`rounded-xl border-2 p-4 text-right transition ${departure
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-blue-400"
-                      }`}
+                    className={`rounded-xl border-2 p-4 text-right transition ${
+                      departure
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white hover:border-blue-400"
+                    }`}
                   >
 
                     <div className="text-sm font-medium text-gray-500">
@@ -779,10 +790,11 @@ export default function Home() {
                         });
                       }, 100);
                     }}
-                    className={`rounded-xl border-2 p-4 text-right transition ${returnDate
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-blue-400"
-                      }`}
+                    className={`rounded-xl border-2 p-4 text-right transition ${
+                      returnDate
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white hover:border-blue-400"
+                    }`}
                   >
 
                     <div className="text-sm font-medium text-gray-500">
@@ -934,6 +946,7 @@ export default function Home() {
 
                 {datesDone && (
                   <button
+                    id="continue-to-passengers"
                     type="button"
                     onClick={() => {
                       setActiveTab(3);
@@ -1039,10 +1052,11 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setClub("none")}
-                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${club === "none"
-                      ? "border-green-500 bg-green-50 text-green-700"
-                      : "border-gray-200 hover:border-blue-400"
-                      }`}
+                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${
+                      club === "none"
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 hover:border-blue-400"
+                    }`}
                   >
 
                     <div className="flex items-center justify-between">
@@ -1070,10 +1084,11 @@ export default function Home() {
                         setClub("has-club");
                       }
                     }}
-                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${club !== "" && club !== "none"
-                      ? "border-green-500 bg-green-50 text-green-700"
-                      : "border-gray-200 hover:border-blue-400"
-                      }`}
+                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${
+                      club !== "" && club !== "none"
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 hover:border-blue-400"
+                    }`}
                   >
 
                     <div className="flex items-center justify-between">
@@ -1106,66 +1121,66 @@ export default function Home() {
                     "ההסתדרות",
                   ].includes(club)
                 ) && (
-                    <div className="mt-5">
+                  <div className="mt-5">
 
-                      <label className="mb-2 block font-medium text-gray-700">
-                        בחרו את כרטיס המועדון
-                      </label>
+                    <label className="mb-2 block font-medium text-gray-700">
+                      בחרו את כרטיס המועדון
+                    </label>
 
-                      <select
-                        value={
-                          [
-                            "ישראכרט",
-                            "פיס פלוס",
-                            "חבר",
-                            "ביחד בשבילך",
-                            "ארגון המורים",
-                            "משרד הביטחון",
-                            "ההסתדרות",
-                          ].includes(club)
-                            ? club
-                            : ""
-                        }
-                        onChange={(e) => setClub(e.target.value)}
-                        className="w-full rounded-xl border border-gray-300 bg-white p-4 font-medium outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                      >
+                    <select
+                      value={
+                        [
+                          "ישראכרט",
+                          "פיס פלוס",
+                          "חבר",
+                          "ביחד בשבילך",
+                          "ארגון המורים",
+                          "משרד הביטחון",
+                          "ההסתדרות",
+                        ].includes(club)
+                          ? club
+                          : ""
+                      }
+                      onChange={(e) => setClub(e.target.value)}
+                      className="w-full rounded-xl border border-gray-300 bg-white p-4 font-medium outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    >
 
-                        <option value="">
-                          בחרו כרטיס מועדון...
-                        </option>
+                      <option value="">
+                        בחרו כרטיס מועדון...
+                      </option>
 
-                        <option value="ישראכרט">
-                          ישראכרט
-                        </option>
+                      <option value="ישראכרט">
+                        ישראכרט
+                      </option>
 
-                        <option value="פיס פלוס">
-                          פיס פלוס
-                        </option>
+                      <option value="פיס פלוס">
+                        פיס פלוס
+                      </option>
 
-                        <option value="חבר">
-                          חבר
-                        </option>
+                      <option value="חבר">
+                        חבר
+                      </option>
 
-                        <option value="ביחד בשבילך">
-                          ביחד בשבילך
-                        </option>
+                      <option value="ביחד בשבילך">
+                        ביחד בשבילך
+                      </option>
 
-                        <option value="ארגון המורים">
-                          ארגון המורים
-                        </option>
+                      <option value="ארגון המורים">
+                        ארגון המורים
+                      </option>
 
-                        <option value="משרד הביטחון">
-                          משרד הביטחון
-                        </option>
+                      <option value="משרד הביטחון">
+                        משרד הביטחון
+                      </option>
 
-                        <option value="ההסתדרות">
-                          ההסתדרות
-                        </option>
+                      <option value="ההסתדרות">
+                        ההסתדרות
+                      </option>
 
-                      </select>
+                    </select>
 
-                    </div>
-                  )}
+                  </div>
+                )}
 
                 {club !== "" && (
                   <button
@@ -1214,6 +1229,7 @@ export default function Home() {
       </section>
 
       {/* ================= אודות ================= */}
+
       <section
         id="about"
         className="mx-auto mt-16 w-full max-w-6xl scroll-mt-24 px-4 pb-8"
@@ -1221,7 +1237,6 @@ export default function Home() {
         <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
           <div className="grid md:grid-cols-2">
 
-            {/* תמונה */}
             <div className="relative min-h-[320px] overflow-hidden md:min-h-[500px]">
               <img
                 src="/airplane.jpg"
@@ -1244,7 +1259,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* תוכן */}
             <div className="flex flex-col justify-center p-7 md:p-10 lg:p-12">
 
               <div className="mb-3 text-sm font-bold text-blue-600">
@@ -1268,7 +1282,6 @@ export default function Home() {
                 לפני הנסיעה.
               </p>
 
-              {/* יתרונות */}
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
 
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-md">
@@ -1329,7 +1342,6 @@ export default function Home() {
 
               </div>
 
-              {/* כפתור */}
               <div className="mt-8">
                 <button
                   type="button"
@@ -1349,6 +1361,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+
       {/* =========================
           לקוחות ממליצים
       ========================= */}
@@ -1488,6 +1501,7 @@ export default function Home() {
       </section>
 
       {/* ================= שאלות נפוצות ================= */}
+
       <section
         id="faq"
         className="mx-auto mt-16 w-full max-w-5xl scroll-mt-24 px-4 pb-8"
@@ -1633,6 +1647,7 @@ export default function Home() {
 
         </div>
       </section>
+
       {/* =========================
           צור קשר
       ========================= */}
@@ -1643,7 +1658,6 @@ export default function Home() {
       >
         <div className="overflow-hidden rounded-3xl bg-cyan-100 shadow-xl">
 
-          {/* כותרת */}
           <div className="px-6 pt-8 text-center md:px-10 md:pt-10">
             <div className="mb-3 text-sm font-bold text-cyan-700">
               אנחנו כאן בשבילכם
@@ -1661,7 +1675,6 @@ export default function Home() {
 
           <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-stretch">
 
-            {/* פרטי קשר */}
             <div className="flex h-full flex-col">
 
               <h3 className="text-2xl font-bold text-gray-900">
@@ -1675,7 +1688,6 @@ export default function Home() {
 
               <div className="mt-7 space-y-4">
 
-                {/* טלפון */}
                 <a
                   href="tel:0544601269"
                   className="flex cursor-pointer items-center gap-4 rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
@@ -1695,7 +1707,6 @@ export default function Home() {
                   </div>
                 </a>
 
-                {/* אימייל */}
                 <a
                   href="mailto:ronshalom.jr@gmail.com"
                   className="flex cursor-pointer items-center gap-4 rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
@@ -1718,6 +1729,7 @@ export default function Home() {
               </div>
 
               <div className="mt-7 grid grid-cols-3 gap-3">
+
                 <div className="rounded-2xl bg-white/80 p-4 text-center shadow-sm">
                   <div className="text-2xl">🛡️</div>
                   <div className="mt-2 text-sm font-bold text-gray-800">
@@ -1738,8 +1750,9 @@ export default function Home() {
                     נוסעים בראש שקט
                   </div>
                 </div>
+
               </div>
-              {/* WhatsApp CTA */}
+
               <a
                 href="https://wa.me/972544601269"
                 target="_blank"
@@ -1751,7 +1764,6 @@ export default function Home() {
 
             </div>
 
-            {/* טופס */}
             <div className="rounded-3xl bg-white p-6 shadow-md md:p-8">
 
               <h3 className="text-xl font-bold text-gray-900">
@@ -1761,7 +1773,6 @@ export default function Home() {
               <p className="mt-2 text-sm text-gray-500">
                 מלאו את הפרטים ונציג יחזור אליכם.
               </p>
-
 
               <form
                 className="mt-6"
@@ -1822,6 +1833,7 @@ export default function Home() {
                   }
                 }}
               >
+
                 <div className="grid gap-5 md:grid-cols-2">
 
                   <div>
@@ -1907,8 +1919,6 @@ export default function Home() {
                 )}
 
               </form>
-
-
 
             </div>
 
@@ -1998,8 +2008,8 @@ export default function Home() {
         </div>
 
       </section>
+
       {/* <AccessibilityButton /> */}
     </main>
   );
 }
-
