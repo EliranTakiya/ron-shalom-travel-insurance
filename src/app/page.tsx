@@ -139,22 +139,22 @@ export default function Home() {
 
   // גלילה אוטומטית לכפתור "המשך לנוסעים"
   // מיד לאחר בחירת תאריך החזרה
-useEffect(() => {
-  if (departure && returnDate) {
-    setTimeout(() => {
-      const bottom = document.getElementById("trip-details-bottom");
+  useEffect(() => {
+    if (departure && returnDate) {
+      setTimeout(() => {
+        const bottom = document.getElementById("trip-details-bottom");
 
-      if (!bottom) return;
+        if (!bottom) return;
 
-      const rect = bottom.getBoundingClientRect();
+        const rect = bottom.getBoundingClientRect();
 
-      window.scrollTo({
-        top: window.scrollY + rect.top - window.innerHeight + 30,
-        behavior: "smooth",
-      });
-    }, 150);
-  }
-}, [departure, returnDate]);
+        window.scrollTo({
+          top: window.scrollY + rect.top - window.innerHeight + 30,
+          behavior: "smooth",
+        });
+      }, 150);
+    }
+  }, [departure, returnDate]);
 
   const resetTrip = () => {
     const confirmed = window.confirm(
@@ -662,7 +662,7 @@ useEffect(() => {
                     active
                       ? "border-blue-600 bg-blue-600 text-white shadow-lg"
                       : "border-gray-200 bg-white text-gray-600 shadow-sm hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md"
-                  }`}
+                    }`}
                 >
 
                   <div className="flex items-center gap-2">
@@ -673,11 +673,10 @@ useEffect(() => {
 
                     {done && (
                       <span
-                        className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${
-                          active
+                        className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${active
                             ? "bg-white text-green-600"
                             : "bg-green-500 text-white"
-                        }`}
+                          }`}
                       >
                         ✓
                       </span>
@@ -763,11 +762,10 @@ useEffect(() => {
                         });
                       }, 100);
                     }}
-                    className={`rounded-xl border-2 p-4 text-right transition ${
-                      departure
+                    className={`rounded-xl border-2 p-4 text-right transition ${departure
                         ? "border-blue-500 bg-blue-50"
                         : "border-gray-200 bg-white hover:border-blue-400"
-                    }`}
+                      }`}
                   >
 
                     <div className="text-sm font-medium text-gray-500">
@@ -796,11 +794,10 @@ useEffect(() => {
                         });
                       }, 100);
                     }}
-                    className={`rounded-xl border-2 p-4 text-right transition ${
-                      returnDate
+                    className={`rounded-xl border-2 p-4 text-right transition ${returnDate
                         ? "border-blue-500 bg-blue-50"
                         : "border-gray-200 bg-white hover:border-blue-400"
-                    }`}
+                      }`}
                   >
 
                     <div className="text-sm font-medium text-gray-500">
@@ -964,8 +961,7 @@ useEffect(() => {
                         });
                       }, 100);
                     }}
-                    className="mt-6 w-full rounded-xl bg-green-500 py-4 text-lg font-bold text-white transition hover:bg-green-600"
-                  >
+                    className="mt-6 w-full rounded-xl bg-green-500 py-4 text-lg font-bold text-white transition hover:bg-green-600"                  >
                     המשך לנוסעים →
                   </button>
                 )}
@@ -1058,11 +1054,10 @@ useEffect(() => {
                   <button
                     type="button"
                     onClick={() => setClub("none")}
-                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${
-                      club === "none"
+                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${club === "none"
                         ? "border-green-500 bg-green-50 text-green-700"
                         : "border-gray-200 hover:border-blue-400"
-                    }`}
+                      }`}
                   >
 
                     <div className="flex items-center justify-between">
@@ -1090,11 +1085,10 @@ useEffect(() => {
                         setClub("has-club");
                       }
                     }}
-                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${
-                      club !== "" && club !== "none"
+                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${club !== "" && club !== "none"
                         ? "border-green-500 bg-green-50 text-green-700"
                         : "border-gray-200 hover:border-blue-400"
-                    }`}
+                      }`}
                   >
 
                     <div className="flex items-center justify-between">
@@ -1127,66 +1121,66 @@ useEffect(() => {
                     "ההסתדרות",
                   ].includes(club)
                 ) && (
-                  <div className="mt-5">
+                    <div className="mt-5">
 
-                    <label className="mb-2 block font-medium text-gray-700">
-                      בחרו את כרטיס המועדון
-                    </label>
+                      <label className="mb-2 block font-medium text-gray-700">
+                        בחרו את כרטיס המועדון
+                      </label>
 
-                    <select
-                      value={
-                        [
-                          "ישראכרט",
-                          "פיס פלוס",
-                          "חבר",
-                          "ביחד בשבילך",
-                          "ארגון המורים",
-                          "משרד הביטחון",
-                          "ההסתדרות",
-                        ].includes(club)
-                          ? club
-                          : ""
-                      }
-                      onChange={(e) => setClub(e.target.value)}
-                      className="w-full rounded-xl border border-gray-300 bg-white p-4 font-medium outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                    >
+                      <select
+                        value={
+                          [
+                            "ישראכרט",
+                            "פיס פלוס",
+                            "חבר",
+                            "ביחד בשבילך",
+                            "ארגון המורים",
+                            "משרד הביטחון",
+                            "ההסתדרות",
+                          ].includes(club)
+                            ? club
+                            : ""
+                        }
+                        onChange={(e) => setClub(e.target.value)}
+                        className="w-full rounded-xl border border-gray-300 bg-white p-4 font-medium outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      >
 
-                      <option value="">
-                        בחרו כרטיס מועדון...
-                      </option>
+                        <option value="">
+                          בחרו כרטיס מועדון...
+                        </option>
 
-                      <option value="ישראכרט">
-                        ישראכרט
-                      </option>
+                        <option value="ישראכרט">
+                          ישראכרט
+                        </option>
 
-                      <option value="פיס פלוס">
-                        פיס פלוס
-                      </option>
+                        <option value="פיס פלוס">
+                          פיס פלוס
+                        </option>
 
-                      <option value="חבר">
-                        חבר
-                      </option>
+                        <option value="חבר">
+                          חבר
+                        </option>
 
-                      <option value="ביחד בשבילך">
-                        ביחד בשבילך
-                      </option>
+                        <option value="ביחד בשבילך">
+                          ביחד בשבילך
+                        </option>
 
-                      <option value="ארגון המורים">
-                        ארגון המורים
-                      </option>
+                        <option value="ארגון המורים">
+                          ארגון המורים
+                        </option>
 
-                      <option value="משרד הביטחון">
-                        משרד הביטחון
-                      </option>
+                        <option value="משרד הביטחון">
+                          משרד הביטחון
+                        </option>
 
-                      <option value="ההסתדרות">
-                        ההסתדרות
-                      </option>
+                        <option value="ההסתדרות">
+                          ההסתדרות
+                        </option>
 
-                    </select>
+                      </select>
 
-                  </div>
-                )}
+                    </div>
+                  )}
 
                 {club !== "" && (
                   <button
@@ -1231,7 +1225,7 @@ useEffect(() => {
             )}
 
           </div>
-               </div>
+        </div>
 
         <div id="trip-details-bottom" />
       </section>
