@@ -50,7 +50,7 @@ export default function AccessibilityButton() {
         type="button"
         aria-label="אפשרויות נגישות"
         onClick={() => setOpen((prev) => !prev)}
-        className="fixed bottom-24 right-5 z-[90] flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-3xl text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        className="fixed bottom-5 left-0 z-[90] flex h-14 w-14 items-center justify-center rounded-r-2xl border border-l-0 border-blue-700/20 bg-blue-600 text-3xl text-white shadow-lg transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300"
       >
         ♿
       </button>
@@ -59,7 +59,7 @@ export default function AccessibilityButton() {
       {open && (
         <div
           dir="rtl"
-          className="fixed bottom-40 right-5 z-[90] w-72 rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl"
+          className="fixed bottom-24 left-0 z-[90] w-72 rounded-r-2xl rounded-l-none border border-l-0 border-gray-200 bg-white p-4 shadow-2xl"
         >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900">
