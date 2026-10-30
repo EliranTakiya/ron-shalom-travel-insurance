@@ -31,6 +31,11 @@ const addonOptions = [
     description: "כיסוי במקרה של אובדן, גניבה או נזק",
   },
   {
+    id: "laptop",
+    title: "טאבלט או מחשב נייד",
+    description: "כיסוי עד $1,500 עם השתתפות עצמית של $100",
+  },
+  {
     id: "pregnancy",
     title: "הרחבת הריון",
     description: "כיסוי בהתאם לתנאי הפוליסה",
@@ -46,6 +51,16 @@ const addonOptions = [
     description: "כיסוי לפעילויות סקי וספורט חורף",
   },
   {
+    id: "competitiveSports",
+    title: "ספורט תחרותי",
+    description: "תעריף יומי, עד $20 לכל תקופת הנסיעה",
+  },
+  {
+    id: "rentalCar",
+    title: "ביטול השתתפות עצמית לרכב שכור",
+    description: "כיסוי עד $1,500; ניתן לבחור ימי כיסוי",
+  },
+  {
     id: "medical",
     title: "מצב רפואי קיים",
     description: "הרחבה בהתאם לתנאי הפוליסה",
@@ -55,6 +70,33 @@ const addonOptions = [
     title: "ביטול וקיצור נסיעה",
     description: "כיסוי בהתאם לתנאי הפוליסה",
   },
+];
+
+const companyAddonOptions = [
+  { id: "harel:valuableItem", company: "הראל", title: "פריט יקר ערך", description: "$1 ליום; נדרש גם כיסוי כבודה" },
+  { id: "harel:personalAccident", company: "הראל", title: "תאונות אישיות", description: "$0.25-$1.08 ליום, עד גיל 70" },
+  { id: "harel:extremeSportsAccident", company: "הראל", title: "תאונות אישיות בספורט אתגרי", description: "$0.10-$0.40 ליום, עד גיל 70" },
+  { id: "harel:cancellation10k", company: "הראל", title: "ביטול/קיצור עד $10,000", description: "מחליף את רמת הכיסוי הרגילה של הראל" },
+  { id: "harel:bicycle2500", company: "הראל", title: "ביטוח אופניים עד $2,500", description: "$1.33 ליום; עד 90 ימים" },
+  { id: "harel:bicycle4500", company: "הראל", title: "ביטוח אופניים עד $4,500", description: "$2.46 ליום; עד 90 ימים" },
+  { id: "harel:bicycle6000", company: "הראל", title: "ביטוח אופניים עד $6,000", description: "$3.30 ליום; עד 90 ימים" },
+  { id: "harel:rentalCarEnhanced", company: "הראל", title: "הרחבת רכב שכור מוגדלת", description: "$26-$88 לכל התקופה; המחיר המדויק דורש בירור מול הראל" },
+  { id: "clal:competitiveSports2", company: "כלל", title: "ספורט תחרותי דרגה 2", description: "$4.25 ליום" },
+  { id: "phoenix:experienceTicket", company: "הפניקס", title: "כרטיסי חוויה", description: "$5 למבוטח; עד $750 לכרטיסים שלא נוצלו עקב ביטול/קיצור" },
+  { id: "phoenix:camera", company: "הפניקס", title: "גניבת מצלמה", description: "$1 ליום; עד $2,000, השתתפות עצמית $100" },
+  { id: "phoenix:israelMedical", company: "הפניקס", title: "הוצאות רפואיות בישראל", description: "$0.50 ליום; גבול הכיסוי לא פורסם במחירון" },
+  { id: "phoenix:rentalCarJeep", company: "הפניקס", title: "רכב שכור: ג׳יפ או קרוון", description: "$15 ליום; ביטול השתתפות עצמית" },
+  { id: "passportcard:valuableItem", company: "פספורטכארד", title: "פריט יקר ערך", description: "$2 ליום; עד $2,000" },
+  { id: "passportcard:phone1600", company: "פספורטכארד", title: "טלפון עד $1,600", description: "$2.10 ליום; מחליף את רמת הטלפון הרגילה בפספורטכארד" },
+  { id: "passportcard:laptop1500", company: "פספורטכארד", title: "מחשב/מצלמה עד $1,500", description: "$1 ליום" },
+  { id: "passportcard:laptop2000", company: "פספורטכארד", title: "מחשב/מצלמה עד $2,000", description: "$1.50 ליום" },
+  { id: "passportcard:personalAccident", company: "פספורטכארד", title: "תאונות אישיות", description: "$0.75 ליום; עד $50,000, עד גיל 75" },
+  { id: "passportcard:operationalCancellation", company: "פספורטכארד", title: "ביטול עקב פעילות מבצעית", description: "$0.50 ליום; למשרתי כוחות הביטחון בלבד" },
+];
+
+const exclusiveAddonGroups = [
+  ["harel:bicycle2500", "harel:bicycle4500", "harel:bicycle6000"],
+  ["passportcard:laptop1500", "passportcard:laptop2000"],
 ];
 
 export default function AddonsForm({
@@ -93,7 +135,11 @@ export default function AddonsForm({
       return;
     }
 
-    setAddons([...addons, id]);
+    const exclusiveGroup = exclusiveAddonGroups.find((group) => group.includes(id));
+    setAddons([
+      ...addons.filter((addon) => !exclusiveGroup?.includes(addon)),
+      id,
+    ]);
 
     if (id === "baggage") {
       setShowBaggageNotice(true);
@@ -283,6 +329,46 @@ export default function AddonsForm({
                     <div className="mt-1 text-sm text-gray-500">
                       {addon.description}
                     </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <h3 className="mt-8 text-lg font-bold text-gray-900">
+          הרחבות מיוחדות לפי חברה
+        </h3>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {companyAddonOptions.map((addon) => {
+            const selected = addons.includes(addon.id);
+
+            return (
+              <button
+                key={addon.id}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => toggleAddon(addon.id)}
+                className={`rounded-xl border-2 p-4 text-right transition ${
+                  selected
+                    ? "border-green-500 bg-green-50"
+                    : "border-gray-200 bg-white hover:border-blue-300"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 ${
+                      selected
+                        ? "border-green-500 bg-green-500 text-white"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {selected && "✓"}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-blue-700">{addon.company}</div>
+                    <div className="mt-1 font-bold text-gray-900">{addon.title}</div>
+                    <div className="mt-1 text-sm text-gray-500">{addon.description}</div>
                   </div>
                 </div>
               </button>

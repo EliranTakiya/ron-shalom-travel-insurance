@@ -1,0 +1,184 @@
+{
+  "priceLists": [
+    {
+      "id": "migdal-travel-2026-source-page",
+      "company": "מגדל",
+      "product": "ביטוח נסיעות לחו\"ל",
+      "currency": "USD",
+      "rateUnit": "מחיר לנוסע ליום, אלא אם צוין אחרת",
+      "pageTitle": "מגדל מחירון ביטוח נסיעות - תעריפון 2026",
+      "source": {
+        "url": "https://shukabit.co.il/migdal-lowcost/prices",
+        "retrievedAt": "2026-10-19",
+        "sourcePageBreadcrumb": "מגדל מחירון ביטוח נסיעות 2024",
+        "rating": {
+          "score": 4.5,
+          "outOf": 5,
+          "description": "דירוג התמורה והעלות בהתאם לכיסויים, על סמך מבוטחים שרכשו את ביטוח הנסיעות של מגדל ודירגו לאחר חזרתם לארץ."
+        }
+      },
+      "sourceVersion": {
+        "pageClaimsYear": 2026,
+        "bodyClaimsRatesUpdatedAccordingToYear": 2025,
+        "effectiveFrom": null,
+        "effectiveTo": null,
+        "verificationNote": "כותרת הדף מציינת תעריפון 2026, אך בגוף הדף מצוין שהטבלאות מעודכנות לפי מחירון מגדל 2025. לא פורסמו תאריכי תחילה או סיום לתעריפים. יש לאמת מול מגדל לפני שימוש להצעה מחייבת."
+      },
+      "pageDescription": [
+        "הדף מציג מחירי ביטוח נסיעות לחו\"ל של מגדל, כיסוי בסיס והרחבות לכל היעדים בעולם.",
+        "הדף מציע מעבר לרכישה ישירה במגדל למי שרכשו בעבר ורוצים לעבור לרכישה מהירה ללא הזנה מחדש של הנתונים."
+      ],
+      "basePlans": [
+        {
+          "id": "platinum-world",
+          "name": "מסע עולמי פלטינום",
+          "destinationScope": "כל היעדים למעט ארצות הברית",
+          "dailyRates": [
+            { "ageFrom": 0, "ageTo": 17, "price": 2.0, "maxTripDays": 180 },
+            { "ageFrom": 18, "ageTo": 30, "price": 2.2, "maxTripDays": 180, "maxTripDaysNote": "ניתן לרכוש עד 365 ימים למבוטחים עד גיל 50, בכפוף לאישור מראש." },
+            { "ageFrom": 31, "ageTo": 44, "price": 2.2, "maxTripDays": 180, "maxTripDaysNote": "ניתן לרכוש עד 365 ימים למבוטחים עד גיל 50, בכפוף לאישור מראש." },
+            { "ageFrom": 45, "ageTo": 60, "price": 2.7, "maxTripDays": 180 },
+            { "ageFrom": 61, "ageTo": 65, "price": 4.4, "maxTripDays": 120 },
+            { "ageFrom": 66, "ageTo": 70, "price": 6.3, "maxTripDays": 120 },
+            { "ageFrom": 71, "ageTo": 75, "price": 8.73, "maxTripDays": 120 },
+            { "ageFrom": 76, "ageTo": 80, "price": 12.4, "maxTripDays": 60 },
+            { "ageFrom": 81, "ageTo": 85, "price": 17.3, "maxTripDays": 30, "underwritingRequired": true, "durationText": "30 ימים בכפוף לחיתום" },
+            { "ageFrom": 86, "ageTo": null, "price": 23.8, "maxTripDays": 7, "underwritingRequired": true, "durationText": "7 ימים בכפוף לחיתום" }
+          ],
+          "includedCoverage": [
+            { "name": "חבות כלפי צד שלישי", "dailyValue": 0.2, "currency": "USD", "removable": true },
+            { "name": "איתור וחילוץ", "dailyValue": 0.2, "currency": "USD", "removable": true }
+          ],
+          "sourceFootnote": "המחיר כולל כיסוי חבות כלפי צד ג' בסך $0.2 וכיסוי לאיתור וחילוץ בסך $0.2. ניתן להסיר הרחבות אלו."
+        },
+        {
+          "id": "lowcost-world",
+          "name": "LOWCOST",
+          "destinationScope": "כל היעדים למעט ארצות הברית",
+          "dailyRates": [
+            { "ageFrom": 0, "ageTo": 17, "price": 1.8, "maxTripDays": 14 },
+            { "ageFrom": 18, "ageTo": 30, "price": 1.9, "maxTripDays": 14 },
+            {
+              "ageFrom": 31,
+              "ageTo": 44,
+              "price": 2.02,
+              "sourcePagePrice": 1.9,
+              "maxTripDays": 14,
+              "rateVerification": "עודכן לפי הצעת מגדל בפועל: 28–31.10.2026, גיל 32, LOWCOST והרחבות. הסכום הכולל 27.28 דולר תואם חישוב של 2.02 דולר בסיס ליום, 0.20 דולר צד ג׳ ליום, 0.20 דולר איתור וחילוץ ליום ו-4.40 דולר הרחבות ליום. דף המקור עדיין מציג 1.90 דולר למדרגת גיל זו."
+            },
+            { "ageFrom": 45, "ageTo": 60, "price": 2.4, "maxTripDays": 14 }
+          ],
+          "unpublishedAgeRange": { "ageFrom": 61, "ageTo": null, "note": "לא מופיעים תעריפים לגילים אלו בטבלה שבמקור." },
+          "includedCoverage": [
+            { "name": "חבות כלפי צד שלישי", "dailyValue": 0.2, "currency": "USD", "removable": true },
+            { "name": "איתור וחילוץ", "dailyValue": 0.2, "currency": "USD", "removable": true }
+          ],
+          "sourceFootnote": "תעריף LOWCOST מחושב בתוספת חבות כלפי צד שלישי בסך $0.2 ליום ובתוספת איתור וחילוץ בסך $0.2 ליום, בהתאם לפרטי התעריף שנמסרו."
+        },
+        {
+          "id": "platinum-usa",
+          "name": "מסע עולמי פלטינום לארה\"ב",
+          "destinationScope": "ארצות הברית",
+          "dailyRates": [
+            { "ageFrom": 0, "ageTo": 17, "price": 2.9, "maxTripDays": 180, "maxTripDaysNote": "עד 365 ימים במוקד." },
+            { "ageFrom": 18, "ageTo": 30, "price": 3.2, "maxTripDays": 180, "maxTripDaysNote": "עד 365 ימים במוקד." },
+            { "ageFrom": 31, "ageTo": 44, "price": 3.2, "maxTripDays": 180, "maxTripDaysNote": "עד 365 ימים במוקד." },
+            { "ageFrom": 45, "ageTo": 60, "price": 4.0, "maxTripDays": 180 },
+            { "ageFrom": 61, "ageTo": 65, "price": 6.6, "maxTripDays": 120 },
+            { "ageFrom": 66, "ageTo": 70, "price": 9.6, "maxTripDays": 120 },
+            { "ageFrom": 71, "ageTo": 75, "price": 13.4, "maxTripDays": 120 },
+            { "ageFrom": 76, "ageTo": 80, "price": 19.12, "maxTripDays": 60 },
+            { "ageFrom": 81, "ageTo": 85, "price": 26.0, "maxTripDays": 30, "underwritingRequired": true, "durationText": "30 ימים בכפוף לחיתום" },
+            { "ageFrom": 86, "ageTo": null, "price": 36.9, "maxTripDays": 7, "underwritingRequired": true, "durationText": "7 ימים בכפוף לחיתום" }
+          ],
+          "includedCoverage": [
+            { "name": "חבות כלפי צד שלישי", "dailyValue": 0.2, "currency": "USD", "removable": true },
+            { "name": "איתור וחילוץ", "dailyValue": 0.2, "currency": "USD", "removable": true }
+          ],
+          "sourceFootnote": "המחיר כולל כיסוי חבות כלפי צד ג' בסך $0.2 וכיסוי לאיתור וחילוץ בסך $0.2. ניתן להסיר הרחבות אלו."
+        },
+        {
+          "id": "lowcost-usa",
+          "name": "LOWCOST לארה\"ב",
+          "destinationScope": "ארצות הברית",
+          "dailyRates": [
+            { "ageFrom": 0, "ageTo": 17, "price": 2.7, "maxTripDays": 14 },
+            { "ageFrom": 18, "ageTo": 30, "price": 2.9, "maxTripDays": 14 },
+            {
+              "ageFrom": 31,
+              "ageTo": 44,
+              "price": 3.13,
+              "sourcePagePrice": 2.9,
+              "maxTripDays": 14,
+              "rateVerification": "תעריף יומי LOWCOST לארה\"ב ללא הרחבות, נמסר על ידי המשתמש עבור גיל 32. צד ג׳ ואיתור/חילוץ מחושבים בנפרד לפי הנתונים שנמסרו."
+            },
+            { "ageFrom": 45, "ageTo": 60, "price": 3.7, "maxTripDays": 14 }
+          ],
+          "unpublishedAgeRange": { "ageFrom": 61, "ageTo": null, "note": "לא מופיעים תעריפים לגילים אלו בטבלה שבמקור." },
+          "includedCoverage": [
+            { "name": "חבות כלפי צד שלישי", "dailyValue": 0.2, "currency": "USD", "removable": true },
+            { "name": "איתור וחילוץ", "dailyValue": 0.2, "currency": "USD", "removable": true }
+          ],
+          "sourceFootnote": "תעריף LOWCOST מחושב בתוספת חבות כלפי צד שלישי בסך $0.2 ליום ובתוספת איתור וחילוץ בסך $0.2 ליום, בהתאם לפרטי התעריף שנמסרו."
+        }
+      ],
+      "addOns": [
+        { "id": "baggage", "name": "כבודה", "coverage": "כיסוי מטען אישי", "dailyPrice": 0.4, "currency": "USD", "appliesTo": "מגדל מסע עולמי פלטינום" },
+        { "id": "tablet-laptop", "name": "טאבלט/ מחשב נייד", "coverage": "כיסוי $1,500; השתתפות עצמית $100", "dailyPrice": 0.8, "currency": "USD", "appliesTo": "מגדל מסע עולמי פלטינום" },
+        { "id": "phone-gps", "name": "טלפון נייד/ GPS", "coverage": "כיסוי $1,000; השתתפות עצמית $30", "dailyPrice": 1.9, "currency": "USD", "appliesTo": "מגדל מסע עולמי פלטינום" },
+        { "id": "pregnancy", "name": "הריון עד שבוע 32", "coverage": "עד $200,000; תקופה מרבית 60 ימים", "dailyPrice": 4.0, "currency": "USD", "appliesTo": "מגדל מסע עולמי פלטינום" },
+        {
+          "id": "preexisting-condition",
+          "name": "החמרה למצב רפואי קיים",
+          "coverage": "$350,000",
+          "dailyRatesByAge": [
+            { "ageFrom": 0, "ageTo": 17, "dailyPrice": 3.5 },
+            { "ageFrom": 18, "ageTo": 60, "dailyPrice": 4.0 },
+            { "ageFrom": 61, "ageTo": 65, "dailyPrice": 6.5 },
+            { "ageFrom": 66, "ageTo": 74, "dailyPrice": 7.5 }
+          ],
+          "currency": "USD"
+        },
+        {
+          "id": "over-75",
+          "name": "ביטוח נסיעות מעל גיל 75",
+          "dailyRatesByAge": [
+            { "ageFrom": 75, "ageTo": 85, "dailyPrice": 15.0 },
+            { "ageFrom": 86, "ageTo": null, "dailyPrice": 22.0 }
+          ],
+          "currency": "USD",
+          "sourceLink": "https://shukabit.co.il/Travel_insurance_over_age_75"
+        },
+        { "id": "winter-sports", "name": "הרחבה לספורט חורף", "coverage": "ניתן לבחור ימים ספציפיים לכיסוי", "dailyPrice": 6.75, "currency": "USD" },
+        { "id": "extreme-sports", "name": "הרחבה לספורט אתגרי", "coverage": "ניתן לבחור ימים ספציפיים לכיסוי", "dailyPrice": 0.6, "currency": "USD" },
+        { "id": "competitive-sports", "name": "ספורט תחרותי", "coverage": "מקסימום $20 לכל תקופת הנסיעה", "dailyPrice": 2.5, "currency": "USD", "maximumTripPrice": 20 },
+        { "id": "psychedelic-rescue", "name": "איתור וחילוץ במקרה של שימוש בסמים פסיכדליים והעברה לישראל", "coverage": "השתתפות עצמית $2,000", "dailyPrice": 0.2, "currency": "USD", "includedInPolicy": true },
+        { "id": "rental-car-deductible", "name": "ביטול השתתפות עצמית לרכב שכור", "coverage": "עד $1,500; ניתן לבחור ימים לכיסוי", "dailyPrice": 6.5, "currency": "USD" },
+        {
+          "id": "trip-cancellation-shortening",
+          "name": "ביטול/קיצור נסיעה",
+          "coverage": "$6,000; מקסימום $15 לכל תקופת הנסיעה",
+          "dailyRatesByAge": [
+            { "ageFrom": 0, "ageTo": 75, "dailyPrice": 1.5 },
+            { "ageFrom": 76, "ageTo": null, "dailyPrice": 2.5 }
+          ],
+          "currency": "USD",
+          "maximumTripPrice": 15
+        },
+        { "id": "pandemic-cancellation-limit", "name": "הגדלת תקרת ההחזר להרחבת ביטול/קיצור נסיעה בזמן מגיפה", "coverage": "$5,000", "additionalPrice": 0, "currency": "USD", "condition": "ללא עלות נוספת לרוכשים הרחבת ביטול/קיצור נסיעה" }
+      ],
+      "generalNotes": [
+        "תעריפי הבסיס מוצגים בדולר ארצות הברית ליום ולנוסע.",
+        "התעריפים והכיסויים נשמרו כפי שמוצגים בדף המקור; הדף מציין כי לעיתים חברות הביטוח מבצעות שינויים בתעריפים בהתאם לנתוני תביעה.",
+        "המקור ממליץ לבדוק התאמה לכל הגילים והיעדים באמצעות השוואת ביטוח הנסיעות באתר.",
+        "ההרחבות מופיעות בטבלה תחת הכותרת מגדל מסע עולמי פלטינום; המקור אינו מפרט במפורש אם אותן תוספות חלות גם על מסלול LOWCOST."
+      ],
+      "sourceDisclaimer": "טבלאות אלו הינן מעודכנות לפי מחירון מגדל 2025. לעיתים חברות הביטוח מבצעות שינויים בתעריפים וזאת לפי נתוני תביעה.",
+      "purchaseLinks": [
+        { "label": "מעבר לרכישה ישירה", "url": "https://shukabit.co.il/node/225?yashir=1&c=2" },
+        { "label": "מגדל ביטוח נסיעות", "url": "https://shukabit.co.il/migdal-lowcost" },
+        { "label": "השוואת ביטוח נסיעות", "url": "https://shukabit.co.il/%D7%94%D7%A9%D7%95%D7%95%D7%90%D7%AA-%D7%91%D7%99%D7%98%D7%95%D7%97-%D7%A0%D7%A1%D7%99%D7%A2%D7%95%D7%AA" }
+      ]
+    }
+  ]
+}
