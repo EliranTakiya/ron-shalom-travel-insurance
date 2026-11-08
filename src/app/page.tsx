@@ -260,11 +260,35 @@ export default function Home() {
 
     if (id === 2) {
       setCalendarOpen(false);
+      setTimeout(() => {
+        document.getElementById("trip-date-form")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
     }
 
     if (id === 3) {
       setTimeout(() => {
         document.getElementById("passenger-form")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+
+    if (id === 4) {
+      setTimeout(() => {
+        document.getElementById("addons-form")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+
+    if (id === 5) {
+      setTimeout(() => {
+        document.getElementById("club-member")?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
@@ -752,7 +776,7 @@ export default function Home() {
             {/* תאריכים */}
 
             {activeTab === 2 && (
-              <div>
+              <div id="trip-date-form" className="scroll-mt-24">
 
                 <h3 className="text-xl font-bold text-gray-900">
                   מתי אתם נוסעים?
