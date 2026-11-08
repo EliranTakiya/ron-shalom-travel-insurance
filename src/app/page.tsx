@@ -24,6 +24,8 @@ export default function Home() {
   const [babyAges, setBabyAges] = useState<(number | null)[]>([]);
 
   const [addons, setAddons] = useState<string[]>([]);
+  const [removeThirdParty, setRemoveThirdParty] = useState(false);
+  const [removeRescue, setRemoveRescue] = useState(false);
   const [club, setClub] = useState("");
 
   const [activeTab, setActiveTab] = useState(0);
@@ -92,6 +94,14 @@ export default function Home() {
         setAddons(data.addons);
       }
 
+      if (typeof data.removeThirdParty === "boolean") {
+        setRemoveThirdParty(data.removeThirdParty);
+      }
+
+      if (typeof data.removeRescue === "boolean") {
+        setRemoveRescue(data.removeRescue);
+      }
+
       if (typeof data.club === "string") {
         setClub(data.club);
       }
@@ -113,6 +123,8 @@ export default function Home() {
         childAges,
         babyAges,
         addons,
+        removeThirdParty,
+        removeRescue,
         club,
       };
 
@@ -134,6 +146,8 @@ export default function Home() {
     childAges,
     babyAges,
     addons,
+    removeThirdParty,
+    removeRescue,
     club,
   ]);
 
@@ -178,6 +192,8 @@ export default function Home() {
     setBabyAges([]);
 
     setAddons([]);
+    setRemoveThirdParty(false);
+    setRemoveRescue(false);
     setClub("");
 
     setActiveTab(1);
@@ -1013,6 +1029,10 @@ export default function Home() {
                 <AddonsForm
                   addons={addons}
                   setAddons={setAddons}
+                  removeThirdParty={removeThirdParty}
+                  setRemoveThirdParty={setRemoveThirdParty}
+                  removeRescue={removeRescue}
+                  setRemoveRescue={setRemoveRescue}
                   destination={destination}
                   departure={departure}
                   returnDate={returnDate}

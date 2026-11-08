@@ -1,0 +1,90 @@
+{
+  "id": "direct-travel-cost-2026-08-09",
+  "company": "ביטוח ישיר",
+  "currency": "USD",
+  "rateUnit": "מחיר יומי לנוסע",
+  "source": {
+    "fileName": "Yashir-Travel-Cost-9.8.2026 (1).xlsx",
+    "worksheet": "travel_costs_09.2023",
+    "createdAt": "2023-09-12",
+    "modifiedAt": "2026-08-09",
+    "verifiedAt": "2026-11-08",
+    "note": "המחירים חושבו לפי מחירון ביטוח ישיר המעודכן שסיפקת."
+  },
+  "baseRates": {
+    "world": [
+      { "ageFrom": 0, "ageTo": 60, "dailyPrice": 2.0 },
+      { "ageFrom": 61, "ageTo": 65, "dailyPrice": 3.5 },
+      { "ageFrom": 66, "ageTo": 70, "dailyPrice": 5.0 },
+      { "ageFrom": 71, "ageTo": 75, "dailyPrice": 7.5 },
+      { "ageFrom": 76, "ageTo": 85, "dailyPrice": 14.0 }
+    ],
+    "northAmerica": [
+      { "ageFrom": 0, "ageTo": 60, "dailyPrice": 3.7 },
+      { "ageFrom": 61, "ageTo": 63, "dailyPrice": 6.0 },
+      { "ageFrom": 64, "ageTo": 70, "dailyPrice": 11.0 },
+      { "ageFrom": 71, "ageTo": 75, "dailyPrice": 17.0 },
+      { "ageFrom": 76, "ageTo": 85, "dailyPrice": 26.3 }
+    ]
+  },
+  "addOns": {
+    "baggage": [{ "ageFrom": 0, "ageTo": 85, "dailyPrice": 0.35 }],
+    "rescue": [{ "ageFrom": 0, "ageTo": 85, "dailyPrice": 0.5 }],
+    "tripShortening": [
+      { "ageFrom": 0, "ageTo": 60, "dailyPrice": 0.32 },
+      { "ageFrom": 61, "ageTo": 70, "dailyPrice": 0.4 },
+      { "ageFrom": 71, "ageTo": 75, "dailyPrice": 0.67 },
+      { "ageFrom": 76, "ageTo": 85, "dailyPrice": 0.83 }
+    ],
+    "cancellation": [
+      { "ageFrom": 0, "ageTo": 60, "dailyPrice": 0.63 },
+      { "ageFrom": 61, "ageTo": 70, "dailyPrice": 0.8 },
+      { "ageFrom": 71, "ageTo": 75, "dailyPrice": 1.33 },
+      { "ageFrom": 76, "ageTo": 85, "dailyPrice": 1.67 }
+    ],
+    "extremeSports": [{ "ageFrom": 0, "ageTo": 65, "dailyPrice": 0.5 }],
+    "ski": [{ "ageFrom": 0, "ageTo": 70, "dailyPrice": 7.5 }],
+    "rentalCar": [{ "ageFrom": 24, "ageTo": 75, "dailyPrice": 8.0 }],
+    "competitiveSports": [{ "ageFrom": 12, "ageTo": 60, "dailyPrice": 4.0 }],
+    "pregnancy": {
+      "fixedFee": 20.0,
+      "rates": [{ "ageFrom": 18, "ageTo": 42, "dailyPrice": 2.0 }]
+    },
+    "phone": [{ "ageFrom": 0, "ageTo": 85, "dailyPrice": 1.6 }],
+    "laptop": [{ "ageFrom": 0, "ageTo": 85, "dailyPrice": 1.6 }],
+    "basicUpgrade": [
+      { "ageFrom": 0, "ageTo": 60, "dailyPrice": 0.15 },
+      { "ageFrom": 61, "ageTo": 75, "dailyPrice": 0.17 },
+      { "ageFrom": 76, "ageTo": 85, "dailyPrice": 0.51 }
+    ],
+    "preexistingCondition": [
+      { "ageFrom": 0, "ageTo": 60, "dailyPrice": 2.64 },
+      { "ageFrom": 61, "ageTo": 65, "dailyPrice": 4.0 },
+      { "ageFrom": 66, "ageTo": 75, "dailyPrice": 5.0 },
+      { "ageFrom": 76, "ageTo": 80, "dailyPrice": 7.5 },
+      { "ageFrom": 81, "ageTo": 85, "dailyPrice": 16.5 }
+    ],
+    "specialPreexistingCondition": {
+      "world": [
+        { "ageFrom": 0, "ageTo": 50, "dailyPrice": 4.1 },
+        { "ageFrom": 51, "ageTo": 60, "dailyPrice": 7.3 },
+        { "ageFrom": 61, "ageTo": 75, "dailyPrice": 10.0 },
+        { "ageFrom": 76, "ageTo": 80, "dailyPrice": 16.0 },
+        { "ageFrom": 81, "ageTo": 85, "dailyPrice": 17.5 }
+      ],
+      "northAmerica": [
+        { "ageFrom": 0, "ageTo": 50, "dailyPrice": 4.1 },
+        { "ageFrom": 51, "ageTo": 60, "dailyPrice": 7.3 },
+        { "ageFrom": 61, "ageTo": 75, "dailyPrice": 10.0 },
+        { "ageFrom": 76, "ageTo": 80, "dailyPrice": 22.1 },
+        { "ageFrom": 81, "ageTo": 85, "dailyPrice": 34.6 }
+      ]
+    }
+  },
+  "notes": [
+    "הרחבת צד ג׳ מופיעה בקובץ במחיר $0.00.",
+    "לא נכללו הרחבות שבעמודותיהן לא הופיע תעריף בטבלת המקור, ובהן מצלמה, אופניים, מוות ונכות והוצאות בישראל עקב תאונה.",
+    "הרחבת הריון: $20 קבועים ועוד $2 ליום לפי הערת הגיליון; גיל זכאות 18-42.",
+    "הרחבות רכב, חיתוך נסיעה והמצב הרפואי מחושבות לפי מחיר יומי; קובץ המקור אינו מציין תקרת ימים או נוסחת מחיר אחרת."
+  ]
+}

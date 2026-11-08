@@ -2,11 +2,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type AddonsFormProps = {
   addons: string[];
   setAddons: (value: string[]) => void;
+  removeThirdParty: boolean;
+  setRemoveThirdParty: (value: boolean) => void;
+  removeRescue: boolean;
+  setRemoveRescue: (value: boolean) => void;
   destination: string;
   departure: string;
   returnDate: string;
@@ -38,7 +42,7 @@ const addonOptions = [
   {
     id: "pregnancy",
     title: "הרחבת הריון",
-    description: "כיסוי בהתאם לתנאי הפוליסה",
+    description: "המחיר ותנאי הזכאות משתנים לפי חברת הביטוח",
   },
   {
     id: "extremeSports",
@@ -92,6 +96,9 @@ const companyAddonOptions = [
   { id: "passportcard:laptop2000", company: "פספורטכארד", title: "מחשב/מצלמה עד $2,000", description: "$1.50 ליום" },
   { id: "passportcard:personalAccident", company: "פספורטכארד", title: "תאונות אישיות", description: "$0.75 ליום; עד $50,000, עד גיל 75" },
   { id: "passportcard:operationalCancellation", company: "פספורטכארד", title: "ביטול עקב פעילות מבצעית", description: "$0.50 ליום; למשרתי כוחות הביטחון בלבד" },
+  { id: "direct:tripShortening", company: "ביטוח ישיר", title: "קיצור נסיעה עד $5,000", description: "$0.32-$0.83 ליום לפי גיל" },
+  { id: "direct:basicUpgrade", company: "ביטוח ישיר", title: "שדרוג רובד בסיסי", description: "$0.15-$0.51 ליום לפי גיל" },
+  { id: "direct:specialPreexistingCondition", company: "ביטוח ישיר", title: "מצב רפואי קודם מיוחד", description: "תעריף לפי גיל ויעד; נדרש אימות תנאי כיסוי" },
 ];
 
 const exclusiveAddonGroups = [
@@ -102,6 +109,10 @@ const exclusiveAddonGroups = [
 export default function AddonsForm({
   addons,
   setAddons,
+  removeThirdParty,
+  setRemoveThirdParty,
+  removeRescue,
+  setRemoveRescue,
   destination,
   departure,
   returnDate,
@@ -118,9 +129,16 @@ export default function AddonsForm({
   const [showClubQuestion, setShowClubQuestion] = useState(false);
   const [showBaggageNotice, setShowBaggageNotice] = useState(false);
   const [showBaggagePassenger, setShowBaggagePassenger] = useState(false);
+  const [extremeSportsStart, setExtremeSportsStart] = useState(departure);
+  const [extremeSportsEnd, setExtremeSportsEnd] = useState(returnDate);
 
   // עכשיו אפשר לבחור כמה נוסעים לכבודה
   const [baggagePassengers, setBaggagePassengers] = useState<string[]>([]);
+
+  useEffect(() => {
+    setExtremeSportsStart(departure);
+    setExtremeSportsEnd(returnDate);
+  }, [departure, returnDate]);
 
   const toggleAddon = (id: string) => {
     if (addons.includes(id)) {
@@ -144,6 +162,11 @@ export default function AddonsForm({
     if (id === "baggage") {
       setShowBaggageNotice(true);
     }
+
+    if (id === "extremeSports") {
+      setExtremeSportsStart(departure);
+      setExtremeSportsEnd(returnDate);
+    }
   };
 
   const canCompare =
@@ -156,7 +179,12 @@ export default function AddonsForm({
     childAges.length === children &&
     childAges.every((age) => age !== null) &&
     babyAges.length === babies &&
-    babyAges.every((age) => age !== null);
+    babyAges.every((age) => age !== null) &&
+    (!addons.includes("extremeSports") || (
+      extremeSportsStart >= departure &&
+      extremeSportsEnd <= returnDate &&
+      extremeSportsEnd >= extremeSportsStart
+    ));
 
   const handleBaggageNoticeConfirm = () => {
     setShowBaggageNotice(false);
@@ -250,6 +278,10 @@ export default function AddonsForm({
         .join(","),
 
       addons: addons.join(","),
+      extremeSportsStart,
+      extremeSportsEnd,
+      removeThirdParty: removeThirdParty.toString(),
+      removeRescue: removeRescue.toString(),
 
       // כל הנוסעים שנבחרו לכבודה
       baggagePassengers: baggagePassengers.join("|"),
@@ -336,6 +368,40 @@ export default function AddonsForm({
           })}
         </div>
 
+        {addons.includes("extremeSports") && (
+          <section className="mt-5 rounded-xl border border-green-200 bg-green-50 p-4" aria-labelledby="extreme-sports-dates-title">
+            <h3 id="extreme-sports-dates-title" className="font-bold text-gray-900">תאריכי כיסוי לספורט אתגרי</h3>
+            <p className="mt-1 text-sm text-gray-600">בחרו את הימים שבהם תרצו שהכיסוי יחול. בפספורטכארד התעריף מחושב לכל הנסיעה.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-medium text-gray-700">
+                מתאריך
+                <input
+                  type="date"
+                  min={departure}
+                  max={returnDate}
+                  value={extremeSportsStart}
+                  onChange={(event) => setExtremeSportsStart(event.target.value)}
+                  className="min-h-11 rounded-lg border border-gray-300 bg-white px-3"
+                />
+              </label>
+              <label className="grid gap-1 text-sm font-medium text-gray-700">
+                עד תאריך
+                <input
+                  type="date"
+                  min={extremeSportsStart || departure}
+                  max={returnDate}
+                  value={extremeSportsEnd}
+                  onChange={(event) => setExtremeSportsEnd(event.target.value)}
+                  className="min-h-11 rounded-lg border border-gray-300 bg-white px-3"
+                />
+              </label>
+            </div>
+          </section>
+        )}
+        {addons.includes("extremeSports") && !canCompare && extremeSportsStart && extremeSportsEnd && (
+          <p role="alert" className="mt-2 text-sm font-medium text-red-700">יש לבחור טווח ספורט אתגרי תקין בתוך תאריכי הנסיעה.</p>
+        )}
+
         <h3 className="mt-8 text-lg font-bold text-gray-900">
           הרחבות מיוחדות לפי חברה
         </h3>
@@ -374,6 +440,29 @@ export default function AddonsForm({
               </button>
             );
           })}
+        </div>
+
+        <h3 className="mt-8 text-lg font-bold text-gray-900">כיסויי בסיס</h3>
+        <p className="mt-1 text-sm text-gray-500">אפשר להסיר כיסויים ולחשב מחדש את ההצעות לפי תנאי כל חברה.</p>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <button
+            type="button"
+            aria-pressed={removeThirdParty}
+            onClick={() => setRemoveThirdParty(!removeThirdParty)}
+            className={`rounded-xl border-2 p-4 text-right transition ${removeThirdParty ? "border-amber-500 bg-amber-50" : "border-gray-200 bg-white hover:border-blue-300"}`}
+          >
+            <span className="font-bold text-gray-900">{removeThirdParty ? "✓ הסר צד ג׳" : "צד ג׳ כלול"}</span>
+            <span className="mt-1 block text-sm text-gray-500">הסרה תפחית מחיר רק בחברות שבהן הכיסוי בתשלום.</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={removeRescue}
+            onClick={() => setRemoveRescue(!removeRescue)}
+            className={`rounded-xl border-2 p-4 text-right transition ${removeRescue ? "border-amber-500 bg-amber-50" : "border-gray-200 bg-white hover:border-blue-300"}`}
+          >
+            <span className="font-bold text-gray-900">{removeRescue ? "✓ הסר איתור וחילוץ" : "איתור וחילוץ כלול"}</span>
+            <span className="mt-1 block text-sm text-gray-500">הסרה תפחית את הרכיב אם הוא מחויב בנפרד או כלול בתעריף.</span>
+          </button>
         </div>
 
         {/* הצגת המבוטחים שאליהם משויכת הכבודה */}

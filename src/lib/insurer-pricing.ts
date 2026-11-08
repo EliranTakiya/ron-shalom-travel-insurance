@@ -1,4 +1,4 @@
-export type InsurerId = "harel" | "menora" | "passportcard" | "clal" | "phoenix";
+export type InsurerId = "harel" | "menora" | "passportcard" | "clal" | "phoenix" | "direct";
 
 export type InsurerQuoteInput = {
   destination: string;
@@ -7,6 +7,10 @@ export type InsurerQuoteInput = {
   ages: number[];
   selectedAddons: string[];
   baggagePassengerCount: number;
+  extremeSportsStart?: string;
+  extremeSportsEnd?: string;
+  removeThirdParty?: boolean;
+  removeRescue?: boolean;
 };
 
 export type InsurerQuote = {
@@ -51,9 +55,11 @@ const sourceNotes: Record<InsurerId, string> = {
   menora: "מחירון מנורה 2026; תעריפי בסיס, ביטול/קיצור ומצב רפואי קודם לפי טבלאות הגיל.",
   passportcard:
     "מחירון 2026 של שוק הביטוח הושווה לתעריפון PassportCard הרשמי מנובמבר 2025: מחיר ארה״ב באתר הוא מחיר העולם בתוספת ארה״ב מהיום הראשון בנסיעות של 31 ימים ומעלה.",
-  clal: "מחירון כלל 2026; מחיר הבסיס כולל הוצאות רפואיות, איתור וחילוץ וצד שלישי.",
+  clal: "מחירון כלל BOOK2 שסופק: תעריף בסיס לפי גיל ויעד; איתור וחילוץ $0.20 ליום לנוסע מתווסף בנפרד, וצד ג׳ ללא תוספת.",
   phoenix:
     "מחירון הפניקס 2026 לאחר הנחת רכישה מקוונת של 10% על הכיסוי הבסיסי; איתור וחילוץ מתווסף בנפרד.",
+  direct:
+    "תעריפי ביטוח ישיר הוזנו מקובץ האקסל שסופק; הגיליון נקרא travel_costs_09.2023 ונערך לאחרונה ב-2026-08-09. לא צוין תאריך תחולה, לכן המחירים משוערים ודורשים אימות.",
 };
 
 const harelWorldBands: AgeBand[] = [
@@ -99,25 +105,24 @@ const menoraUsaBands: AgeBand[] = [
 ];
 
 const clalWorldBands: AgeBand[] = [
-  { from: 0, to: 18, price: 1.95 },
+  { from: 0, to: 18, price: 1.72 },
   { from: 19, to: 60, price: 2.3 },
-  { from: 61, to: 65, price: 3.3 },
-  { from: 66, to: 70, price: 5 },
-  { from: 71, to: 75, price: 7 },
-  { from: 76, to: 80, price: 12.5 },
-  { from: 81, to: 85, price: 14.5 },
-  { from: 86, to: null, price: 20 },
+  { from: 61, to: 65, price: 3.6 },
+  { from: 66, to: 70, price: 4.55 },
+  { from: 71, to: 75, price: 6.8 },
+  { from: 76, to: 80, price: 12.3 },
+  { from: 81, to: 85, price: 14.3 },
+  { from: 86, to: null, price: 19.8 },
 ];
 
 const clalUsaBands: AgeBand[] = [
-  { from: 0, to: 18, price: 3.56 },
-  { from: 19, to: 60, price: 3.78 },
-  { from: 61, to: 65, price: 6.98 },
-  { from: 66, to: 70, price: 9.98 },
-  { from: 71, to: 75, price: 12.48 },
-  { from: 76, to: 80, price: 22.48 },
-  { from: 81, to: 85, price: 22.48 },
-  { from: 86, to: null, price: 32.5 },
+  { from: 0, to: 60, price: 3.448333333 },
+  { from: 61, to: 65, price: 6.548333333 },
+  { from: 66, to: 70, price: 9.8 },
+  { from: 71, to: 75, price: 12 },
+  { from: 76, to: 80, price: 22 },
+  { from: 81, to: 85, price: 22 },
+  { from: 86, to: null, price: 32 },
 ];
 
 const phoenixBands = [
@@ -173,6 +178,14 @@ const findBand = (age: number, bands: AgeBand[]) =>
   bands.find((band) => age >= band.from && (band.to === null || age <= band.to));
 
 const toCents = (amount: number) => Math.round(amount * 100);
+
+const inclusiveDays = (startDate: string, endDate: string) => {
+  const start = dateTimestamp(startDate);
+  const end = dateTimestamp(endDate);
+  return start !== null && end !== null && end >= start
+    ? (end - start) / 86_400_000 + 1
+    : null;
+};
 
 const isUsaDestination = (destination: string) =>
   destination.split(",").some((country) => country.trim() === "ארצות הברית");
@@ -362,6 +375,8 @@ const addonPrice = (
       if (addon === "personalAccident") return age <= 75 ? { dailyPrice: 0.75, coverage: "תאונות אישיות עד $50,000" } : null;
       if (addon === "operationalCancellation") return { dailyPrice: 0.5, coverage: "ביטול עקב פעילות מבצעית; למשרתי כוחות הביטחון בלבד" };
       return null;
+    case "direct":
+      return null;
   }
 };
 
@@ -371,6 +386,7 @@ const getBaseDailyRate = (
   durationDays: number,
   isUsa: boolean,
   isAmericas: boolean,
+  removeRescue: boolean,
 ): { dailyRates: number[]; maxTripDays?: number; underwritingRequired: boolean; error?: string } => {
   if (insurerId === "harel") {
     const band = findBand(age, isUsa ? harelUsaBands : harelWorldBands);
@@ -379,7 +395,7 @@ const getBaseDailyRate = (
       dailyRates: Array.from({ length: durationDays }, (_, index) =>
         isUsa && index >= 20 ? (age <= 60 ? 3.7 : band.price) :
           !isUsa && index >= 14 && age >= 51 && age <= 60 ? 2.8 : band.price,
-      ),
+      ).map((rate) => removeRescue ? Math.max(0, rate - 0.2) : rate),
       maxTripDays: band.maxTripDays,
       underwritingRequired: false,
     };
@@ -389,14 +405,14 @@ const getBaseDailyRate = (
     const band = findBand(age, isUsa ? menoraUsaBands : menoraWorldBands);
     if (!band) return { dailyRates: [], underwritingRequired: age > 80, error: age > 80 ? "תעריף מעל גיל 80 כפוף לחיתום של מנורה." : "לא פורסם תעריף מנורה לגיל זה." };
     return {
-      dailyRates: Array(durationDays).fill(band.price),
+      dailyRates: Array(durationDays).fill(removeRescue ? Math.max(0, band.price - 0.2) : band.price),
       maxTripDays: age > 80 ? 30 : band.maxTripDays,
       underwritingRequired: age > 80,
     };
   }
 
   if (insurerId === "clal") {
-    const band = findBand(age, isUsa ? clalUsaBands : clalWorldBands);
+    const band = findBand(age, isUsa || isAmericas ? clalUsaBands : clalWorldBands);
     if (!band) return { dailyRates: [], underwritingRequired: false, error: "לא פורסם תעריף כלל לגיל זה." };
     return {
       dailyRates: Array(durationDays).fill(band.price),
@@ -417,6 +433,14 @@ const getBaseDailyRate = (
       dailyRates: Array(durationDays).fill(dailyRate),
       maxTripDays: Math.min(band.maxTripDays, isUsa || !isAmericas ? band.maxTripDays : 15),
       underwritingRequired: false,
+    };
+  }
+
+  if (insurerId === "direct") {
+    return {
+      dailyRates: [],
+      underwritingRequired: false,
+      error: "יש לחשב הצעת ביטוח ישיר באמצעות התעריפון הייעודי.",
     };
   }
 
@@ -450,6 +474,7 @@ export function calculateInsurerQuote(
     passportcard: "פספורטכארד",
     clal: "כלל",
     phoenix: "הפניקס",
+    direct: "ביטוח ישיר",
   };
   const companyName = companyNames[insurerId];
   const departure = dateTimestamp(input.departure);
@@ -464,41 +489,6 @@ export function calculateInsurerQuote(
 
   const isUsa = isUsaDestination(input.destination);
   const isAmericas = isAmericasDestination(input.destination);
-  const passengerRates = input.ages.map((age) =>
-    getBaseDailyRate(insurerId, age, durationDays, isUsa, isAmericas),
-  );
-  const baseError = passengerRates.find((rate) => rate.error)?.error;
-  const underwritingRequired = passengerRates.some((rate) => rate.underwritingRequired);
-  if (baseError) return errorQuote(insurerId, companyName, durationDays, baseError, underwritingRequired);
-  if (passengerRates.some((rate) => rate.maxTripDays !== undefined && durationDays > rate.maxTripDays)) {
-    return errorQuote(insurerId, companyName, durationDays, "משך הנסיעה חורג מתקופת הביטוח המרבית שפורסמה לגיל הנוסעים.", underwritingRequired);
-  }
-
-  let baseCents = passengerRates.reduce(
-    (sum, rate) => sum + rate.dailyRates.reduce((total, price) => total + toCents(price), 0),
-    0,
-  );
-  const rescueCents = insurerId === "phoenix"
-    ? toCents(0.2) * durationDays * input.ages.length
-    : 0;
-  let addOnsCents = 0;
-  const priceLines: NonNullable<InsurerQuote["priceLines"]> = [
-    {
-      id: "base",
-      name: `ביטוח בסיס - ${companyName}`,
-      description: isUsa ? "תעריף לארצות הברית" : isAmericas ? "תעריף ליעד באמריקה" : "תעריף לכל היעדים",
-      amount: baseCents / 100,
-    },
-  ];
-  if (rescueCents > 0) {
-    priceLines.push({
-      id: "rescue",
-      name: "איתור, חיפוש וחילוץ",
-      description: "$0.20 ליום לנוסע; תעריף ההפניקס מציין שהמחיר הבסיסי אינו כולל רכיב זה",
-      amount: rescueCents / 100,
-    });
-  }
-
   const scopedAddons = [...new Set(input.selectedAddons)].flatMap((selection) => {
     const separatorIndex = selection.indexOf(":");
     if (separatorIndex < 0) return [selection];
@@ -511,19 +501,83 @@ export function calculateInsurerQuote(
     if (insurerId === "passportcard" && addon === "laptop" && scopedAddons.some((item) => ["laptop1500", "laptop2000"].includes(item))) return false;
     return true;
   });
+  const selectedSportsDays = inclusiveDays(
+    input.extremeSportsStart || input.departure,
+    input.extremeSportsEnd || input.returnDate,
+  );
+  const sportsStartTimestamp = dateTimestamp(input.extremeSportsStart || input.departure);
+  const sportsEndTimestamp = dateTimestamp(input.extremeSportsEnd || input.returnDate);
+  const sportsCoverageDays = insurerId === "passportcard" ? durationDays : selectedSportsDays;
+  if (
+    input.selectedAddons.includes("extremeSports") &&
+    insurerId !== "passportcard" &&
+    (sportsCoverageDays === null ||
+      sportsCoverageDays > durationDays ||
+      sportsStartTimestamp === null ||
+      sportsEndTimestamp === null ||
+      sportsStartTimestamp < departure ||
+      sportsEndTimestamp > returnDate)
+  ) {
+    return errorQuote(insurerId, companyName, durationDays, "טווח תאריכי הספורט האתגרי לא תקין או חורג מתאריכי הנסיעה.");
+  }
+  const passengerRates = input.ages.map((age) =>
+    getBaseDailyRate(insurerId, age, durationDays, isUsa, isAmericas, input.removeRescue ?? false),
+  );
+  const baseError = passengerRates.find((rate) => rate.error)?.error;
+  const underwritingRequired = passengerRates.some((rate) => rate.underwritingRequired);
+  if (baseError) return errorQuote(insurerId, companyName, durationDays, baseError, underwritingRequired);
+  if (passengerRates.some((rate) => rate.maxTripDays !== undefined && durationDays > rate.maxTripDays)) {
+    return errorQuote(insurerId, companyName, durationDays, "משך הנסיעה חורג מתקופת הביטוח המרבית שפורסמה לגיל הנוסעים.", underwritingRequired);
+  }
+
+  let baseCents = passengerRates.reduce(
+    (sum, rate) => sum + rate.dailyRates.reduce((total, price) => total + toCents(price), 0),
+    0,
+  );
+  const rescueCents = !input.removeRescue && (insurerId === "phoenix" || insurerId === "clal" || insurerId === "passportcard")
+    ? toCents(0.2) * durationDays * input.ages.length
+    : 0;
+  let addOnsCents = 0;
+  const priceLines: NonNullable<InsurerQuote["priceLines"]> = [
+    {
+      id: "base",
+      name: `ביטוח בסיס - ${companyName}`,
+      description: [
+        isUsa ? "תעריף לארצות הברית" : isAmericas ? "תעריף ליעד באמריקה" : "תעריף לכל היעדים",
+        input.removeRescue && ["harel", "menora"].includes(insurerId) ? "איתור וחילוץ הוסר מהתעריף" : "",
+      ].filter(Boolean).join("; "),
+      amount: baseCents / 100,
+    },
+  ];
+  if (rescueCents > 0) {
+    priceLines.push({
+      id: "rescue",
+      name: "איתור, חיפוש וחילוץ",
+      description: insurerId === "clal"
+        ? "$0.20 ליום לנוסע לפי BOOK2; צד ג׳ כלול ללא תוספת"
+        : insurerId === "passportcard"
+          ? "$0.20 ליום לנוסע לפי התעריף; ניתן להסיר"
+          : "$0.20 ליום לנוסע; תעריף ההפניקס מציין שהמחיר הבסיסי אינו כולל רכיב זה",
+      amount: rescueCents / 100,
+    });
+  }
+
   const billedAddons = insurerId === "clal" && (selectedAddons.includes("phone") || selectedAddons.includes("laptop"))
     ? [...selectedAddons.filter((addon) => addon !== "phone" && addon !== "laptop"), "devices"]
     : selectedAddons;
   const warnings: string[] = [];
 
   for (const addon of billedAddons) {
+    const addonDays = addon === "extremeSports" && insurerId !== "passportcard"
+      ? sportsCoverageDays ?? durationDays
+      : durationDays;
     const coveredPassengers = addon === "baggage"
       ? Math.min(input.ages.length, input.baggagePassengerCount || input.ages.length)
       : input.ages.length;
     let addonCents = 0;
     for (let passengerIndex = 0; passengerIndex < coveredPassengers; passengerIndex += 1) {
       const age = input.ages[passengerIndex];
-      const price = addonPrice(insurerId, addon, age, isUsa, durationDays);
+      const price = addonPrice(insurerId, addon, age, isUsa, addonDays);
       if (!price) {
         return errorQuote(
           insurerId,
@@ -539,7 +593,7 @@ export function calculateInsurerQuote(
       }
       const passengerPremium = price.flatPrice !== undefined
         ? toCents(price.flatPrice)
-        : toCents(price.dailyPrice ?? 0) * durationDays;
+        : toCents(price.dailyPrice ?? 0) * addonDays;
       addonCents += Math.min(
         passengerPremium,
         price.maximumTripPrice === undefined ? passengerPremium : toCents(price.maximumTripPrice),
@@ -564,7 +618,10 @@ export function calculateInsurerQuote(
           medical: "מצב רפואי קודם",
           cancellation: "ביטול וקיצור נסיעה",
         } as Record<string, string>)[addon] ?? addon;
-    const lineDescription = addonPrice(insurerId, addon, input.ages[0], isUsa, durationDays)?.coverage;
+    const lineDescription = [
+      addonPrice(insurerId, addon, input.ages[0], isUsa, addonDays)?.coverage,
+      addon === "extremeSports" && insurerId !== "passportcard" ? `כיסוי ל-${addonDays} ימים` : "",
+    ].filter(Boolean).join("; ");
     priceLines.push({
       id: lineId,
       name: lineName,
@@ -579,13 +636,22 @@ export function calculateInsurerQuote(
   if (insurerId === "clal" && selectedAddons.includes("competitiveSports")) {
     warnings.push("המחיר חושב לפי ספורט תחרותי דרגה 1; דרגה 2 מתומחרת ב-$4.25 ליום.");
   }
-  if (input.selectedAddons.some((addon) => ["ski", "extremeSports", "rentalCar"].includes(addon))) {
-    warnings.push("המחיר חושב עבור כל ימי הנסיעה; בחלק מהחברות ניתן לבחור ימים מסוימים לכיסוי.");
+  if (selectedAddons.some((addon) => ["ski", "rentalCar"].includes(addon))) {
+    warnings.push("המחיר חושב עבור כל ימי הנסיעה בהרחבה זו.");
+  }
+  if (selectedAddons.includes("extremeSports") && insurerId === "passportcard") {
+    warnings.push("בפספורטכארד תעריף הספורט האתגרי מחושב לכל ימי הנסיעה, ללא בחירת טווח תאריכים.");
   }
   if (insurerId === "phoenix" && isUsa && durationDays > 15) {
     warnings.push("תעריף ארה״ב החל מהיום ה-15 חושב לכל ימי הנסיעה, בהתאם לטבלה.");
   }
   if (underwritingRequired) warnings.push("המחיר משוער בלבד ואחד הנוסעים נדרש לחיתום רפואי.");
+  if (input.removeThirdParty) {
+    priceLines.push({ id: "thirdPartyRemoved", name: "צד ג׳", description: "הכיסוי הוסר; בחלק מהחברות הוא ניתן ללא תוספת מחיר.", amount: 0 });
+  }
+  if (input.removeRescue && !["harel", "menora"].includes(insurerId)) {
+    priceLines.push({ id: "rescueRemoved", name: "איתור וחילוץ", description: "הכיסוי הוסר מההצעה.", amount: 0 });
+  }
 
   const totalCents = baseCents + rescueCents + addOnsCents;
   baseCents += rescueCents;

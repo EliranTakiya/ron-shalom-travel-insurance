@@ -2,8 +2,9 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { calculateMigdalQuote } from "@/lib/migdal-pricing";
+import { calculateDirectInsuranceQuote } from "@/lib/direct-insurance-pricing";
 import { calculateInsurerQuote, type InsurerId } from "@/lib/insurer-pricing";
+import { calculateMigdalQuote } from "@/lib/migdal-pricing";
 
 const addonNames: Record<string, string> = {
   phone: "טלפון נייד",
@@ -89,6 +90,10 @@ function CheckoutContent() {
   const baggagePassengers = baggagePassengersParam
     ? baggagePassengersParam.split("|").filter(Boolean)
     : [];
+  const extremeSportsStart = searchParams.get("extremeSportsStart") || departure;
+  const extremeSportsEnd = searchParams.get("extremeSportsEnd") || returnDate;
+  const removeThirdParty = searchParams.get("removeThirdParty") === "true";
+  const removeRescue = searchParams.get("removeRescue") === "true";
 
   const passengerAges = [...adultAges, ...childAges, ...babyAges];
   const quoteInput = {
@@ -98,6 +103,10 @@ function CheckoutContent() {
     ages: passengerAges,
     selectedAddons,
     baggagePassengerCount: baggagePassengers.length,
+    extremeSportsStart,
+    extremeSportsEnd,
+    removeThirdParty,
+    removeRescue,
   };
   const supportedInsurers: InsurerId[] = [
     "harel",
@@ -106,9 +115,11 @@ function CheckoutContent() {
     "clal",
     "phoenix",
   ];
-  const quote = supportedInsurers.includes(companyId as InsurerId)
-    ? calculateInsurerQuote(companyId as InsurerId, quoteInput)
-    : calculateMigdalQuote(quoteInput);
+  const quote = companyId === "direct"
+    ? calculateDirectInsuranceQuote(quoteInput)
+    : supportedInsurers.includes(companyId as InsurerId)
+      ? calculateInsurerQuote(companyId as InsurerId, quoteInput)
+      : calculateMigdalQuote(quoteInput);
 
   // תמיכה במספר יעדים
   const selectedCountries = destination

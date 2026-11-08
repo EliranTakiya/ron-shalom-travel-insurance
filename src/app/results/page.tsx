@@ -2,12 +2,13 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { calculateMigdalQuote } from "@/lib/migdal-pricing";
+import { calculateDirectInsuranceQuote } from "@/lib/direct-insurance-pricing";
 import {
   calculateInsurerQuote,
   type InsurerId,
   type InsurerQuote,
 } from "@/lib/insurer-pricing";
+import { calculateMigdalQuote } from "@/lib/migdal-pricing";
 
 type Quote = ReturnType<typeof calculateMigdalQuote> | InsurerQuote;
 
@@ -65,6 +66,10 @@ const addonNames: Record<string, string> = {
   "passportcard:laptop2000": "פספורטכארד · מחשב/מצלמה עד $2,000",
   "passportcard:personalAccident": "פספורטכארד · תאונות אישיות",
   "passportcard:operationalCancellation": "פספורטכארד · ביטול עקב פעילות מבצעית",
+  "direct:tripShortening": "ביטוח ישיר · קיצור נסיעה עד $5,000",
+  "direct:basicUpgrade": "ביטוח ישיר · שדרוג רובד בסיסי",
+  "direct:rescue": "ביטוח ישיר · איתור וחילוץ",
+  "direct:specialPreexistingCondition": "ביטוח ישיר · מצב רפואי קודם מיוחד",
 };
 
 function ResultsContent() {
@@ -109,6 +114,10 @@ function ResultsContent() {
   const baggagePassengers = baggagePassengersParam
     ? baggagePassengersParam.split("|").filter(Boolean)
     : [];
+  const extremeSportsStart = searchParams.get("extremeSportsStart") || departure;
+  const extremeSportsEnd = searchParams.get("extremeSportsEnd") || returnDate;
+  const removeThirdParty = searchParams.get("removeThirdParty") === "true";
+  const removeRescue = searchParams.get("removeRescue") === "true";
 
   const passengerAges = [...adultAges, ...childAges, ...babyAges];
   const quoteInput = {
@@ -118,6 +127,10 @@ function ResultsContent() {
     ages: passengerAges,
     selectedAddons,
     baggagePassengerCount: baggagePassengers.length,
+    extremeSportsStart,
+    extremeSportsEnd,
+    removeThirdParty,
+    removeRescue,
   };
   const migdalQuote = calculateMigdalQuote(quoteInput);
   const insurerIds: InsurerId[] = [
@@ -129,6 +142,7 @@ function ResultsContent() {
   ];
   const quotesById: Record<string, Quote> = {
     migdal: migdalQuote,
+    direct: calculateDirectInsuranceQuote(quoteInput),
     ...Object.fromEntries(
       insurerIds.map((id) => [id, calculateInsurerQuote(id, quoteInput)]),
     ),
@@ -140,6 +154,7 @@ function ResultsContent() {
     { id: "passportcard", name: "פספורטכארד", color: "bg-rose-600" },
     { id: "clal", name: "כלל", color: "bg-indigo-700" },
     { id: "phoenix", name: "הפניקס", color: "bg-orange-600" },
+    { id: "direct", name: "ביטוח ישיר", color: "bg-emerald-700" },
   ];
   const insuranceCompanies: InsuranceCompany[] = companyConfigs.flatMap(
     ({ id, name, color }) => {
@@ -264,6 +279,10 @@ function ResultsContent() {
       babyAges: babyAges.join(","),
 
       addons: selectedAddons.join(","),
+      extremeSportsStart,
+      extremeSportsEnd,
+      removeThirdParty: removeThirdParty.toString(),
+      removeRescue: removeRescue.toString(),
 
       // מעביר את כל המבוטחים לכבודה
       baggagePassengers: baggagePassengers.join("|"),
@@ -406,6 +425,18 @@ function ResultsContent() {
                 </div>
               ) : (
                 <div className="mt-1 font-bold text-gray-900">ללא הרחבות</div>
+              )}
+              {selectedAddons.includes("extremeSports") && (
+                <div className="mt-2 text-xs text-gray-600">
+                  ימי ספורט אתגרי: {formatDate(extremeSportsStart)} - {formatDate(extremeSportsEnd)}
+                  {" · פספורטכארד מחייבת לפי כל ימי הנסיעה"}
+                </div>
+              )}
+              {(removeThirdParty || removeRescue) && (
+                <div className="mt-2 flex flex-wrap gap-1 text-xs text-amber-800">
+                  {removeThirdParty && <span className="rounded-full bg-amber-100 px-2 py-1">צד ג׳ הוסר</span>}
+                  {removeRescue && <span className="rounded-full bg-amber-100 px-2 py-1">איתור וחילוץ הוסר</span>}
+                </div>
               )}
 
               {/* כבודה למבוטחים */}

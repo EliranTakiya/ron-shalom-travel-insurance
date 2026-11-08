@@ -22,7 +22,14 @@
         "bodyClaimsRatesUpdatedAccordingToYear": 2025,
         "effectiveFrom": null,
         "effectiveTo": null,
-        "verificationNote": "כותרת הדף מציינת תעריפון 2026, אך בגוף הדף מצוין שהטבלאות מעודכנות לפי מחירון מגדל 2025. לא פורסמו תאריכי תחילה או סיום לתעריפים. יש לאמת מול מגדל לפני שימוש להצעה מחייבת."
+        "verifiedAt": "2026-11-08",
+        "verificationNote": "העמוד מציג טבלת מחירון 2026, אך בגוף/הערת המקור עדיין נכתב שהטבלאות מעודכנות לפי 2025. מדרגות LOWCOST עודכנו לפי הערכים המוצגים בטבלה בעת הבדיקה ב-2026-11-08. לא פורסמו תאריכי תחילה או סיום לתעריפים; יש לאמת מול מגדל לפני שימוש להצעה מחייבת."
+      },
+      "tariffUpdate": {
+        "sourceFile": "6768_brochure NACHAL Rates_b.pdf",
+        "sourceMonth": "2026-11",
+        "verifiedAt": "2026-11-08",
+        "note": "תעריפי Platinum לעולם ולארה״ב כוללים $0.20 איתור וחילוץ ו-$0.20 צד ג׳; אין להוסיף אותם שוב למחיר הבסיס."
       },
       "pageDescription": [
         "הדף מציג מחירי ביטוח נסיעות לחו\"ל של מגדל, כיסוי בסיס והרחבות לכל היעדים בעולם.",
@@ -34,16 +41,15 @@
           "name": "מסע עולמי פלטינום",
           "destinationScope": "כל היעדים למעט ארצות הברית",
           "dailyRates": [
-            { "ageFrom": 0, "ageTo": 17, "price": 2.0, "maxTripDays": 180 },
-            { "ageFrom": 18, "ageTo": 30, "price": 2.2, "maxTripDays": 180, "maxTripDaysNote": "ניתן לרכוש עד 365 ימים למבוטחים עד גיל 50, בכפוף לאישור מראש." },
-            { "ageFrom": 31, "ageTo": 44, "price": 2.2, "maxTripDays": 180, "maxTripDaysNote": "ניתן לרכוש עד 365 ימים למבוטחים עד גיל 50, בכפוף לאישור מראש." },
-            { "ageFrom": 45, "ageTo": 60, "price": 2.7, "maxTripDays": 180 },
-            { "ageFrom": 61, "ageTo": 65, "price": 4.4, "maxTripDays": 120 },
-            { "ageFrom": 66, "ageTo": 70, "price": 6.3, "maxTripDays": 120 },
-            { "ageFrom": 71, "ageTo": 75, "price": 8.73, "maxTripDays": 120 },
-            { "ageFrom": 76, "ageTo": 80, "price": 12.4, "maxTripDays": 60 },
+            { "ageFrom": 0, "ageTo": 17, "price": 2.2, "maxTripDays": 180 },
+            { "ageFrom": 18, "ageTo": 44, "price": 2.42, "maxTripDays": 180 },
+            { "ageFrom": 45, "ageTo": 60, "price": 2.84, "maxTripDays": 180 },
+            { "ageFrom": 61, "ageTo": 65, "price": 4.84, "maxTripDays": 120 },
+            { "ageFrom": 66, "ageTo": 70, "price": 6.93, "maxTripDays": 120 },
+            { "ageFrom": 71, "ageTo": 75, "price": 8.9, "maxTripDays": 120 },
+            { "ageFrom": 76, "ageTo": 80, "price": 13.64, "maxTripDays": 60 },
             { "ageFrom": 81, "ageTo": 85, "price": 17.3, "maxTripDays": 30, "underwritingRequired": true, "durationText": "30 ימים בכפוף לחיתום" },
-            { "ageFrom": 86, "ageTo": null, "price": 23.8, "maxTripDays": 7, "underwritingRequired": true, "durationText": "7 ימים בכפוף לחיתום" }
+            { "ageFrom": 86, "ageTo": null, "price": 24.6, "maxTripDays": 7, "underwritingRequired": true, "durationText": "7 ימים בכפוף לחיתום" }
           ],
           "includedCoverage": [
             { "name": "חבות כלפי צד שלישי", "dailyValue": 0.2, "currency": "USD", "removable": true },
@@ -61,33 +67,31 @@
             {
               "ageFrom": 31,
               "ageTo": 44,
-              "price": 2.02,
-              "sourcePagePrice": 1.9,
+              "price": 1.9,
               "maxTripDays": 14,
-              "rateVerification": "עודכן לפי הצעת מגדל בפועל: 28–31.10.2026, גיל 32, LOWCOST והרחבות. הסכום הכולל 27.28 דולר תואם חישוב של 2.02 דולר בסיס ליום, 0.20 דולר צד ג׳ ליום, 0.20 דולר איתור וחילוץ ליום ו-4.40 דולר הרחבות ליום. דף המקור עדיין מציג 1.90 דולר למדרגת גיל זו."
+              "rateVerification": "העמוד המעודכן מציג $1.90 ליום למדרגת גיל זו. הצעת מגדל בפועל מ-28–31.10.2026 הציגה $2.02; עדכון זה מעדיף את המחירון הציבורי העדכני, והפער נשמר כהערת אימות."
             },
             { "ageFrom": 45, "ageTo": 60, "price": 2.4, "maxTripDays": 14 }
           ],
           "unpublishedAgeRange": { "ageFrom": 61, "ageTo": null, "note": "לא מופיעים תעריפים לגילים אלו בטבלה שבמקור." },
           "includedCoverage": [
             { "name": "חבות כלפי צד שלישי", "dailyValue": 0.2, "currency": "USD", "removable": true },
-            { "name": "איתור וחילוץ", "dailyValue": 0.2, "currency": "USD", "removable": true }
+            { "name": "איתור וחילוץ", "dailyValue": 0, "currency": "USD", "removable": true, "includedAtNoAdditionalCost": true }
           ],
-          "sourceFootnote": "תעריף LOWCOST מחושב בתוספת חבות כלפי צד שלישי בסך $0.2 ליום ובתוספת איתור וחילוץ בסך $0.2 ליום, בהתאם לפרטי התעריף שנמסרו."
+          "sourceFootnote": "תעריף LOWCOST כולל חבות צד ג׳ בסך $0.20 ליום; איתור וחילוץ כלול ללא תוספת תשלום לפי העמוד המעודכן."
         },
         {
           "id": "platinum-usa",
           "name": "מסע עולמי פלטינום לארה\"ב",
           "destinationScope": "ארצות הברית",
           "dailyRates": [
-            { "ageFrom": 0, "ageTo": 17, "price": 2.9, "maxTripDays": 180, "maxTripDaysNote": "עד 365 ימים במוקד." },
-            { "ageFrom": 18, "ageTo": 30, "price": 3.2, "maxTripDays": 180, "maxTripDaysNote": "עד 365 ימים במוקד." },
-            { "ageFrom": 31, "ageTo": 44, "price": 3.2, "maxTripDays": 180, "maxTripDaysNote": "עד 365 ימים במוקד." },
-            { "ageFrom": 45, "ageTo": 60, "price": 4.0, "maxTripDays": 180 },
-            { "ageFrom": 61, "ageTo": 65, "price": 6.6, "maxTripDays": 120 },
-            { "ageFrom": 66, "ageTo": 70, "price": 9.6, "maxTripDays": 120 },
+            { "ageFrom": 0, "ageTo": 17, "price": 2.9, "maxTripDays": 180 },
+            { "ageFrom": 18, "ageTo": 44, "price": 3.53, "maxTripDays": 180 },
+            { "ageFrom": 45, "ageTo": 60, "price": 4.19, "maxTripDays": 180 },
+            { "ageFrom": 61, "ageTo": 65, "price": 6.9, "maxTripDays": 120 },
+            { "ageFrom": 66, "ageTo": 70, "price": 10.56, "maxTripDays": 120 },
             { "ageFrom": 71, "ageTo": 75, "price": 13.4, "maxTripDays": 120 },
-            { "ageFrom": 76, "ageTo": 80, "price": 19.12, "maxTripDays": 60 },
+            { "ageFrom": 76, "ageTo": 80, "price": 21.03, "maxTripDays": 60 },
             { "ageFrom": 81, "ageTo": 85, "price": 26.0, "maxTripDays": 30, "underwritingRequired": true, "durationText": "30 ימים בכפוף לחיתום" },
             { "ageFrom": 86, "ageTo": null, "price": 36.9, "maxTripDays": 7, "underwritingRequired": true, "durationText": "7 ימים בכפוף לחיתום" }
           ],
@@ -107,19 +111,18 @@
             {
               "ageFrom": 31,
               "ageTo": 44,
-              "price": 3.13,
-              "sourcePagePrice": 2.9,
+              "price": 2.9,
               "maxTripDays": 14,
-              "rateVerification": "תעריף יומי LOWCOST לארה\"ב ללא הרחבות, נמסר על ידי המשתמש עבור גיל 32. צד ג׳ ואיתור/חילוץ מחושבים בנפרד לפי הנתונים שנמסרו."
+              "rateVerification": "העמוד המעודכן מציג $2.90 ליום למדרגת גיל זו."
             },
             { "ageFrom": 45, "ageTo": 60, "price": 3.7, "maxTripDays": 14 }
           ],
           "unpublishedAgeRange": { "ageFrom": 61, "ageTo": null, "note": "לא מופיעים תעריפים לגילים אלו בטבלה שבמקור." },
           "includedCoverage": [
             { "name": "חבות כלפי צד שלישי", "dailyValue": 0.2, "currency": "USD", "removable": true },
-            { "name": "איתור וחילוץ", "dailyValue": 0.2, "currency": "USD", "removable": true }
+            { "name": "איתור וחילוץ", "dailyValue": 0, "currency": "USD", "removable": true, "includedAtNoAdditionalCost": true }
           ],
-          "sourceFootnote": "תעריף LOWCOST מחושב בתוספת חבות כלפי צד שלישי בסך $0.2 ליום ובתוספת איתור וחילוץ בסך $0.2 ליום, בהתאם לפרטי התעריף שנמסרו."
+          "sourceFootnote": "תעריף LOWCOST כולל חבות צד ג׳ בסך $0.20 ליום; איתור וחילוץ כלול ללא תוספת תשלום לפי העמוד המעודכן."
         }
       ],
       "addOns": [

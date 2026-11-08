@@ -48,6 +48,10 @@ type MigdalQuoteInput = {
   ages: number[];
   selectedAddons: string[];
   baggagePassengerCount: number;
+  extremeSportsStart?: string;
+  extremeSportsEnd?: string;
+  removeThirdParty?: boolean;
+  removeRescue?: boolean;
 };
 
 export type MigdalQuote = {
@@ -135,6 +139,12 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
   }
 
   const durationDays = (returnDate - departure) / 86_400_000 + 1;
+  const extremeSportsStart = parseDate(input.extremeSportsStart || input.departure);
+  const extremeSportsEnd = parseDate(input.extremeSportsEnd || input.returnDate);
+  const extremeSportsDays = extremeSportsStart !== null && extremeSportsEnd !== null &&
+      extremeSportsStart >= departure && extremeSportsEnd <= returnDate && extremeSportsEnd >= extremeSportsStart
+    ? (extremeSportsEnd - extremeSportsStart) / 86_400_000 + 1
+    : null;
   const ages = input.ages;
 
   if (
@@ -146,6 +156,20 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
       durationDays,
       price: null,
       error: "לא ניתן לחשב את המחיר: חסרים גילאים תקינים של הנוסעים.",
+      warnings: [],
+      underwritingRequired: false,
+    };
+  }
+
+  if (
+    input.selectedAddons.includes("extremeSports") &&
+    (extremeSportsDays === null || extremeSportsDays > durationDays)
+  ) {
+    return {
+      planName: "",
+      durationDays,
+      price: null,
+      error: "טווח תאריכי הספורט האתגרי לא תקין או חורג מתאריכי הנסיעה.",
       warnings: [],
       underwritingRequired: false,
     };
@@ -212,10 +236,24 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
     };
   }
 
-  const basePremiumCents = rates.reduce(
+  const grossBasePremiumCents = rates.reduce(
     (sum, rate) => sum + toCents(rate.price) * durationDays,
     0,
   );
+  const isLowcost = plan.id.startsWith("lowcost-");
+  const removedIncludedCents = !isLowcost
+    ? (plan.includedCoverage ?? []).reduce((sum, coverage) => {
+        const shouldRemove = coverage.name.includes("צד שלישי")
+          ? input.removeThirdParty
+          : coverage.name.includes("איתור וחילוץ")
+            ? input.removeRescue
+            : false;
+        return shouldRemove
+          ? sum + toCents(coverage.dailyValue ?? 0) * durationDays * ages.length
+          : sum;
+      }, 0)
+    : 0;
+  const basePremiumCents = grossBasePremiumCents - removedIncludedCents;
   let addOnsPremiumCents = 0;
   let coveragePremiumCents = 0;
   let totalCents = basePremiumCents;
@@ -227,13 +265,16 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
     },
   ];
   const warnings: string[] = [];
-  const isLowcost = plan.id.startsWith("lowcost-");
-
   for (const coverage of plan.includedCoverage ?? []) {
     const amount = coverage.dailyValue === undefined
       ? 0
       : toCents(coverage.dailyValue) * durationDays * ages.length / 100;
-    const isAdditionalCharge = isLowcost && amount > 0;
+    const removed = coverage.name.includes("צד שלישי")
+      ? input.removeThirdParty
+      : coverage.name.includes("איתור וחילוץ")
+        ? input.removeRescue
+        : false;
+    const isAdditionalCharge = isLowcost && amount > 0 && !removed;
     if (isAdditionalCharge) {
       const amountCents = Math.round(amount * 100);
       coveragePremiumCents += amountCents;
@@ -242,13 +283,15 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
     priceLines.push({
       id: `included-${coverage.name}`,
       name: coverage.name,
-      description: isAdditionalCharge
+      description: removed
+        ? "הוסר מההצעה"
+        : isAdditionalCharge
         ? `$${coverage.dailyValue?.toFixed(2)} ליום לנוסע`
         : coverage.includedAtNoAdditionalCost
         ? "כלול ללא תוספת תשלום"
         : "כלול במחיר הבסיס",
-      amount,
-      includedInBase: !isAdditionalCharge,
+      amount: removed ? 0 : amount,
+      includedInBase: !isAdditionalCharge && !removed,
     });
   }
 
@@ -297,7 +340,8 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
       }
 
       const addonPremiumCents = (addonRates as AgeRate[]).reduce((sum, rate) => {
-        const premium = toCents(rate.dailyPrice) * durationDays;
+        const addonDurationDays = selectedAddon === "extremeSports" ? extremeSportsDays ?? durationDays : durationDays;
+        const premium = toCents(rate.dailyPrice) * addonDurationDays;
         return (
           sum + Math.min(premium, toCents(addon.maximumTripPrice ?? Infinity))
         );
@@ -315,7 +359,8 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
         selectedAddon === "baggage"
           ? input.baggagePassengerCount || ages.length
           : ages.length;
-      const premium = toCents(addon.dailyPrice) * durationDays * coveredCount;
+      const addonDurationDays = selectedAddon === "extremeSports" ? extremeSportsDays ?? durationDays : durationDays;
+      const premium = toCents(addon.dailyPrice) * addonDurationDays * coveredCount;
       const maximum =
         addon.maximumTripPrice === undefined
           ? premium
@@ -339,7 +384,9 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
     )
   ) {
     warnings.push(
-      "המחיר חושב עבור כל ימי הנסיעה בהרחבה זו. במחירון ניתן לבחור ימים מסוימים לכיסוי.",
+      input.selectedAddons.includes("extremeSports")
+        ? `ספורט אתגרי חושב ל-${extremeSportsDays} ימי כיסוי.`
+        : "המחיר חושב עבור כל ימי הנסיעה בהרחבה זו. במחירון ניתן לבחור ימים מסוימים לכיסוי.",
     );
   }
 
