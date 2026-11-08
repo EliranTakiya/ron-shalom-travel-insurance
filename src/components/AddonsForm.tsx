@@ -132,6 +132,57 @@ export default function AddonsForm({
   const [showExtremeSportsDates, setShowExtremeSportsDates] = useState(false);
   const [extremeSportsStart, setExtremeSportsStart] = useState(departure);
   const [extremeSportsEnd, setExtremeSportsEnd] = useState(returnDate);
+  const [sportsCalendarMonth, setSportsCalendarMonth] = useState(() => new Date());
+  const [sportsRangeStep, setSportsRangeStep] = useState<"start" | "end">("start");
+
+  const weekDays = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
+  const monthNames = [
+    "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
+    "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
+  ];
+
+  const formatDateValue = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+  const getSportsCalendarDays = () => {
+    const year = sportsCalendarMonth.getFullYear();
+    const month = sportsCalendarMonth.getMonth();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return [
+      ...Array.from({ length: firstWeekday }, () => null),
+      ...Array.from({ length: daysInMonth }, (_, index) => new Date(year, month, index + 1)),
+    ];
+  };
+
+  const previousSportsMonth = () => {
+    const previous = new Date(sportsCalendarMonth.getFullYear(), sportsCalendarMonth.getMonth() - 1, 1);
+    const firstTripMonth = departure ? new Date(Number(departure.slice(0, 4)), Number(departure.slice(5, 7)) - 1, 1) : null;
+    if (!firstTripMonth || previous >= firstTripMonth) setSportsCalendarMonth(previous);
+  };
+
+  const nextSportsMonth = () => {
+    const next = new Date(sportsCalendarMonth.getFullYear(), sportsCalendarMonth.getMonth() + 1, 1);
+    const lastTripMonth = returnDate ? new Date(Number(returnDate.slice(0, 4)), Number(returnDate.slice(5, 7)) - 1, 1) : null;
+    if (!lastTripMonth || next <= lastTripMonth) setSportsCalendarMonth(next);
+  };
+
+  const selectSportsDate = (date: Date) => {
+    const value = formatDateValue(date);
+    if (sportsRangeStep === "start") {
+      setExtremeSportsStart(value);
+      setExtremeSportsEnd("");
+      setSportsRangeStep("end");
+      return;
+    }
+    if (value < extremeSportsStart) {
+      setExtremeSportsStart(value);
+      setExtremeSportsEnd("");
+      return;
+    }
+    setExtremeSportsEnd(value);
+    setSportsRangeStep("start");
+  };
 
   // עכשיו אפשר לבחור כמה נוסעים לכבודה
   const [baggagePassengers, setBaggagePassengers] = useState<string[]>([]);
@@ -139,6 +190,8 @@ export default function AddonsForm({
   useEffect(() => {
     setExtremeSportsStart(departure);
     setExtremeSportsEnd(returnDate);
+    const tripStart = departure ? new Date(`${departure}T00:00:00`) : new Date();
+    setSportsCalendarMonth(new Date(tripStart.getFullYear(), tripStart.getMonth(), 1));
   }, [departure, returnDate]);
 
   const toggleAddon = (id: string) => {
@@ -171,6 +224,9 @@ export default function AddonsForm({
     if (id === "extremeSports") {
       setExtremeSportsStart(departure);
       setExtremeSportsEnd(returnDate);
+        const tripStart = departure ? new Date(`${departure}T00:00:00`) : new Date();
+        setSportsCalendarMonth(new Date(tripStart.getFullYear(), tripStart.getMonth(), 1));
+        setSportsRangeStep("start");
       setShowExtremeSportsDates(true);
     }
   };
@@ -663,7 +719,7 @@ export default function AddonsForm({
             aria-modal="true"
             aria-labelledby="extreme-sports-dates-title"
             dir="rtl"
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
           >
             <h3 id="extreme-sports-dates-title" className="text-center text-xl font-bold text-gray-900">
               תאריכי כיסוי לספורט אתגרי
@@ -671,29 +727,70 @@ export default function AddonsForm({
             <p className="mt-2 text-center text-sm text-gray-600">
               בחרו את התקופה שבה תרצו את הכיסוי. בפספורטכארד התעריף מחושב לכל הנסיעה.
             </p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <label className="grid gap-1 text-sm font-medium text-gray-700">
-                מתאריך
-                <input
-                  type="date"
-                  min={departure}
-                  max={returnDate}
-                  value={extremeSportsStart}
-                  onChange={(event) => setExtremeSportsStart(event.target.value)}
-                  className="min-h-11 rounded-lg border border-gray-300 bg-white px-3"
-                />
-              </label>
-              <label className="grid gap-1 text-sm font-medium text-gray-700">
-                עד תאריך
-                <input
-                  type="date"
-                  min={extremeSportsStart || departure}
-                  max={returnDate}
-                  value={extremeSportsEnd}
-                  onChange={(event) => setExtremeSportsEnd(event.target.value)}
-                  className="min-h-11 rounded-lg border border-gray-300 bg-white px-3"
-                />
-              </label>
+            <div className="mx-auto mt-5 max-w-sm rounded-2xl border border-gray-200 bg-white p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={nextSportsMonth}
+                  aria-label="החודש הבא"
+                  className="rounded-lg px-3 py-2 text-xl text-gray-600 hover:bg-gray-100"
+                >
+                  ←
+                </button>
+                <div className="text-lg font-bold text-gray-900">
+                  {monthNames[sportsCalendarMonth.getMonth()]} {sportsCalendarMonth.getFullYear()}
+                </div>
+                <button
+                  type="button"
+                  onClick={previousSportsMonth}
+                  aria-label="החודש הקודם"
+                  className="rounded-lg px-3 py-2 text-xl text-gray-600 hover:bg-gray-100"
+                >
+                  →
+                </button>
+              </div>
+              <div className="mb-3 rounded-xl bg-blue-50 p-2 text-center text-sm text-blue-800">
+                {sportsRangeStep === "start" ? "בחרו תאריך התחלה" : "עכשיו בחרו תאריך סיום"}
+              </div>
+              <div className="mb-1 grid grid-cols-7">
+                {weekDays.map((day) => (
+                  <div key={day} className="py-2 text-center text-xs font-bold text-gray-400">{day}</div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {getSportsCalendarDays().map((date, index) => {
+                  if (!date) return <div key={`empty-${index}`} className="h-10" />;
+                  const value = formatDateValue(date);
+                  const disabled = value < departure || value > returnDate;
+                  const isStart = value === extremeSportsStart;
+                  const isEnd = value === extremeSportsEnd;
+                  const inRange = extremeSportsStart && extremeSportsEnd && value > extremeSportsStart && value < extremeSportsEnd;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => selectSportsDate(date)}
+                      className={`flex h-10 w-full items-center justify-center rounded-lg text-sm transition ${
+                        disabled
+                          ? "cursor-not-allowed text-gray-300"
+                          : isStart || isEnd
+                            ? "bg-blue-600 font-bold text-white ring-2 ring-blue-300"
+                            : inRange
+                              ? "bg-blue-100 text-blue-800"
+                              : "text-gray-700 hover:bg-blue-50"
+                      }`}
+                    >
+                      {date.getDate()}
+                    </button>
+                  );
+                })}
+              </div>
+              {extremeSportsStart && extremeSportsEnd && (
+                <p className="mt-3 text-center text-sm font-medium text-gray-700">
+                  {extremeSportsStart} — {extremeSportsEnd}
+                </p>
+              )}
             </div>
             {(!extremeSportsStart || !extremeSportsEnd || extremeSportsStart < departure || extremeSportsEnd > returnDate || extremeSportsEnd < extremeSportsStart) && (
               <p role="alert" className="mt-3 text-sm font-medium text-red-700">
