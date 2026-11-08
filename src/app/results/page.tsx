@@ -311,12 +311,6 @@ function ResultsContent() {
       </section>
 
       {/* Trip summary */}
-
-                {selectedAddons.includes("laptop") && (
-                  <div>
-                    ✓ טאבלט או מחשב נייד
-                  </div>
-                )}
       <section className="mx-auto max-w-6xl px-6 py-6">
         <div className="rounded-xl bg-white p-5 shadow-sm">
           <h2 className="mb-5 text-lg font-bold text-gray-900">
@@ -537,6 +531,10 @@ function ResultsContent() {
                 {selectedAddons.includes("phone") && (
                     <div>✓ כיסוי לטלפון נייד</div>
                   )}
+
+                {selectedAddons.includes("laptop") && (
+                  <div>✓ טאבלט או מחשב נייד</div>
+                )}
 
                 {selectedAddons.includes("baggage") && (
                     <div>✓ כיסוי כבודה</div>

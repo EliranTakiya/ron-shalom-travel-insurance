@@ -129,6 +129,7 @@ export default function AddonsForm({
   const [showClubQuestion, setShowClubQuestion] = useState(false);
   const [showBaggageNotice, setShowBaggageNotice] = useState(false);
   const [showBaggagePassenger, setShowBaggagePassenger] = useState(false);
+  const [showExtremeSportsDates, setShowExtremeSportsDates] = useState(false);
   const [extremeSportsStart, setExtremeSportsStart] = useState(departure);
   const [extremeSportsEnd, setExtremeSportsEnd] = useState(returnDate);
 
@@ -150,6 +151,10 @@ export default function AddonsForm({
         setShowBaggageNotice(false);
       }
 
+      if (id === "extremeSports") {
+        setShowExtremeSportsDates(false);
+      }
+
       return;
     }
 
@@ -166,6 +171,7 @@ export default function AddonsForm({
     if (id === "extremeSports") {
       setExtremeSportsStart(departure);
       setExtremeSportsEnd(returnDate);
+      setShowExtremeSportsDates(true);
     }
   };
 
@@ -327,7 +333,56 @@ export default function AddonsForm({
           בחר את הכיסויים שחשובים לך
         </p>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <section className="mt-5 border-b-2 border-slate-200 pb-8" aria-labelledby="base-coverage-title">
+          <h3 id="base-coverage-title" className="text-lg font-bold text-gray-900">
+            כיסויי בסיס
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            אפשר להסיר כיסויים ולחשב מחדש את ההצעות לפי תנאי כל חברה
+          </p>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <button
+              type="button"
+              aria-pressed={removeThirdParty}
+              onClick={() => setRemoveThirdParty(!removeThirdParty)}
+              className={`rounded-xl border-2 p-4 text-right transition ${
+                removeThirdParty
+                  ? "border-amber-500 bg-amber-50"
+                  : "border-gray-200 bg-white hover:border-blue-300"
+              }`}
+            >
+              <span className="block font-bold text-gray-900">
+                {removeThirdParty ? "✓ הסר צד ג׳" : "צד ג׳ כלול"}
+              </span>
+              <span className="mt-1 block text-sm text-gray-500">
+                החיסכון יחול רק בחברות שגובות תשלום עבור הכיסוי.
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={removeRescue}
+              onClick={() => setRemoveRescue(!removeRescue)}
+              className={`rounded-xl border-2 p-4 text-right transition ${
+                removeRescue
+                  ? "border-amber-500 bg-amber-50"
+                  : "border-gray-200 bg-white hover:border-blue-300"
+              }`}
+            >
+              <span className="block font-bold text-gray-900">
+                {removeRescue ? "✓ הסר איתור וחילוץ" : "איתור וחילוץ כלול"}
+              </span>
+              <span className="mt-1 block text-sm text-gray-500">
+                המחיר יופחת לפי הסכום שכל חברה מייחסת לכיסוי.
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section className="mt-7 border-t border-slate-200 pt-6" aria-labelledby="paid-addons-title">
+          <h3 id="paid-addons-title" className="text-lg font-bold text-gray-900">
+            הרחבות בתוספת תשלום
+          </h3>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
           {addonOptions.map((addon) => {
             const selected = addons.includes(addon.id);
 
@@ -368,35 +423,14 @@ export default function AddonsForm({
           })}
         </div>
 
-        {addons.includes("extremeSports") && (
-          <section className="mt-5 rounded-xl border border-green-200 bg-green-50 p-4" aria-labelledby="extreme-sports-dates-title">
-            <h3 id="extreme-sports-dates-title" className="font-bold text-gray-900">תאריכי כיסוי לספורט אתגרי</h3>
-            <p className="mt-1 text-sm text-gray-600">בחרו את הימים שבהם תרצו שהכיסוי יחול. בפספורטכארד התעריף מחושב לכל הנסיעה.</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="grid gap-1 text-sm font-medium text-gray-700">
-                מתאריך
-                <input
-                  type="date"
-                  min={departure}
-                  max={returnDate}
-                  value={extremeSportsStart}
-                  onChange={(event) => setExtremeSportsStart(event.target.value)}
-                  className="min-h-11 rounded-lg border border-gray-300 bg-white px-3"
-                />
-              </label>
-              <label className="grid gap-1 text-sm font-medium text-gray-700">
-                עד תאריך
-                <input
-                  type="date"
-                  min={extremeSportsStart || departure}
-                  max={returnDate}
-                  value={extremeSportsEnd}
-                  onChange={(event) => setExtremeSportsEnd(event.target.value)}
-                  className="min-h-11 rounded-lg border border-gray-300 bg-white px-3"
-                />
-              </label>
-            </div>
-          </section>
+        {addons.includes("extremeSports") && !showExtremeSportsDates && (
+          <button
+            type="button"
+            onClick={() => setShowExtremeSportsDates(true)}
+            className="mt-3 text-sm font-semibold text-blue-700 underline"
+          >
+            שינוי תאריכי כיסוי לספורט אתגרי
+          </button>
         )}
         {addons.includes("extremeSports") && !canCompare && extremeSportsStart && extremeSportsEnd && (
           <p role="alert" className="mt-2 text-sm font-medium text-red-700">יש לבחור טווח ספורט אתגרי תקין בתוך תאריכי הנסיעה.</p>
@@ -441,29 +475,7 @@ export default function AddonsForm({
             );
           })}
         </div>
-
-        <h3 className="mt-8 text-lg font-bold text-gray-900">כיסויי בסיס</h3>
-        <p className="mt-1 text-sm text-gray-500">אפשר להסיר כיסויים ולחשב מחדש את ההצעות לפי תנאי כל חברה.</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <button
-            type="button"
-            aria-pressed={removeThirdParty}
-            onClick={() => setRemoveThirdParty(!removeThirdParty)}
-            className={`rounded-xl border-2 p-4 text-right transition ${removeThirdParty ? "border-amber-500 bg-amber-50" : "border-gray-200 bg-white hover:border-blue-300"}`}
-          >
-            <span className="font-bold text-gray-900">{removeThirdParty ? "✓ הסר צד ג׳" : "צד ג׳ כלול"}</span>
-            <span className="mt-1 block text-sm text-gray-500">הסרה תפחית מחיר רק בחברות שבהן הכיסוי בתשלום.</span>
-          </button>
-          <button
-            type="button"
-            aria-pressed={removeRescue}
-            onClick={() => setRemoveRescue(!removeRescue)}
-            className={`rounded-xl border-2 p-4 text-right transition ${removeRescue ? "border-amber-500 bg-amber-50" : "border-gray-200 bg-white hover:border-blue-300"}`}
-          >
-            <span className="font-bold text-gray-900">{removeRescue ? "✓ הסר איתור וחילוץ" : "איתור וחילוץ כלול"}</span>
-            <span className="mt-1 block text-sm text-gray-500">הסרה תפחית את הרכיב אם הוא מחויב בנפרד או כלול בתעריף.</span>
-          </button>
-        </div>
+        </section>
 
         {/* הצגת המבוטחים שאליהם משויכת הכבודה */}
         {addons.includes("baggage") &&
@@ -641,6 +653,74 @@ export default function AddonsForm({
               ביטול
             </button>
           </div>
+        </div>
+      )}
+
+      {showExtremeSportsDates && addons.includes("extremeSports") && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 p-4">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="extreme-sports-dates-title"
+            dir="rtl"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+          >
+            <h3 id="extreme-sports-dates-title" className="text-center text-xl font-bold text-gray-900">
+              תאריכי כיסוי לספורט אתגרי
+            </h3>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              בחרו את התקופה שבה תרצו את הכיסוי. בפספורטכארד התעריף מחושב לכל הנסיעה.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-medium text-gray-700">
+                מתאריך
+                <input
+                  type="date"
+                  min={departure}
+                  max={returnDate}
+                  value={extremeSportsStart}
+                  onChange={(event) => setExtremeSportsStart(event.target.value)}
+                  className="min-h-11 rounded-lg border border-gray-300 bg-white px-3"
+                />
+              </label>
+              <label className="grid gap-1 text-sm font-medium text-gray-700">
+                עד תאריך
+                <input
+                  type="date"
+                  min={extremeSportsStart || departure}
+                  max={returnDate}
+                  value={extremeSportsEnd}
+                  onChange={(event) => setExtremeSportsEnd(event.target.value)}
+                  className="min-h-11 rounded-lg border border-gray-300 bg-white px-3"
+                />
+              </label>
+            </div>
+            {(!extremeSportsStart || !extremeSportsEnd || extremeSportsStart < departure || extremeSportsEnd > returnDate || extremeSportsEnd < extremeSportsStart) && (
+              <p role="alert" className="mt-3 text-sm font-medium text-red-700">
+                יש לבחור טווח תקין בתוך תאריכי הנסיעה.
+              </p>
+            )}
+            <div className="mt-6 grid gap-3">
+              <button
+                type="button"
+                disabled={!extremeSportsStart || !extremeSportsEnd || extremeSportsStart < departure || extremeSportsEnd > returnDate || extremeSportsEnd < extremeSportsStart}
+                onClick={() => setShowExtremeSportsDates(false)}
+                className="w-full rounded-xl bg-green-600 py-3 font-bold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+              >
+                אישור תאריכים
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAddons(addons.filter((addon) => addon !== "extremeSports"));
+                  setShowExtremeSportsDates(false);
+                }}
+                className="w-full rounded-xl border-2 border-gray-200 bg-white py-3 font-bold text-gray-700 transition hover:bg-gray-50"
+              >
+                ביטול ההרחבה
+              </button>
+            </div>
+          </section>
         </div>
       )}
 
