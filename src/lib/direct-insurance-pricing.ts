@@ -115,22 +115,26 @@ export function calculateDirectInsuranceQuote(
     );
   }
 
-  const baseCents = (passengerRates as number[]).reduce(
+  const medicalBaseCents = (passengerRates as number[]).reduce(
     (sum, dailyRate) => sum + cents(dailyRate) * durationDays,
     0,
   );
   const rescueRates = tariff.addOns.rescue as RateBand[];
-  const rescueCents = input.removeRescue
-    ? 0
-    : input.ages.reduce((sum, age) => {
+  const removedRescueCents = input.removeRescue
+    ? input.ages.reduce((sum, age) => {
         const dailyRate = findRate(age, rescueRates);
         return sum + (dailyRate === undefined ? 0 : cents(dailyRate) * durationDays);
-      }, 0);
+      }, 0)
+    : 0;
+  const baseCents = medicalBaseCents - removedRescueCents;
   const priceLines: NonNullable<InsurerQuote["priceLines"]> = [
     {
       id: "base",
       name: "ביטוח בסיס - ביטוח ישיר",
-      description: isNorthAmerica ? "תעריף לצפון אמריקה" : "תעריף לשאר היעדים",
+      description: [
+        isNorthAmerica ? "תעריף לצפון אמריקה" : "תעריף לשאר היעדים",
+        input.removeRescue ? "איתור וחילוץ הוסר ממחיר הבסיס" : "כולל איתור וחילוץ",
+      ].join("; "),
       amount: baseCents / 100,
     },
     {
@@ -143,9 +147,9 @@ export function calculateDirectInsuranceQuote(
     {
       id: "rescue",
       name: "איתור, חיפוש וחילוץ",
-      description: input.removeRescue ? "הוסר מההצעה" : "$0.50 ליום לנוסע לפי התעריף",
-      amount: rescueCents / 100,
-      includedInBase: false,
+      description: input.removeRescue ? "הוסר ממחיר הבסיס" : "כלול במחיר הבסיס",
+      amount: 0,
+      includedInBase: !input.removeRescue,
     },
   ];
 
@@ -231,10 +235,10 @@ export function calculateDirectInsuranceQuote(
     planName: "ביטוח נסיעות לחו״ל",
     durationDays,
     currency: "USD",
-    price: (baseCents + rescueCents + addOnsCents) / 100,
+    price: (baseCents + addOnsCents) / 100,
     basePremium: baseCents / 100,
     addOnsPremium: addOnsCents / 100,
-    coveragePremium: rescueCents / 100,
+    coveragePremium: 0,
     priceLines,
     error: null,
     warnings: [],

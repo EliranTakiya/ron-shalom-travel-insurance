@@ -55,9 +55,9 @@ const sourceNotes: Record<InsurerId, string> = {
   menora: "מחירון מנורה 2026; תעריפי בסיס, ביטול/קיצור ומצב רפואי קודם לפי טבלאות הגיל.",
   passportcard:
     "מחירון 2026 של שוק הביטוח הושווה לתעריפון PassportCard הרשמי מנובמבר 2025: מחיר ארה״ב באתר הוא מחיר העולם בתוספת ארה״ב מהיום הראשון בנסיעות של 31 ימים ומעלה.",
-  clal: "מחירון כלל BOOK2 שסופק: תעריף בסיס לפי גיל ויעד; איתור וחילוץ $0.20 ליום לנוסע מתווסף בנפרד, וצד ג׳ ללא תוספת.",
+  clal: "מחירון כלל BOOK2 שסופק: תעריף הבסיס כולל את כיסויי הבסיס; הסרת איתור וחילוץ מנכה $0.20 ליום לנוסע, וצד ג׳ ללא תוספת.",
   phoenix:
-    "מחירון הפניקס 2026 לאחר הנחת רכישה מקוונת של 10% על הכיסוי הבסיסי; איתור וחילוץ מתווסף בנפרד.",
+    "מחירון הפניקס 2026 לאחר הנחת רכישה מקוונת של 10% על הכיסוי הבסיסי; איתור וחילוץ נכלל בבסיס, והסרתו מנכה $0.20 ליום לנוסע.",
   direct:
     "תעריפי ביטוח ישיר הוזנו מקובץ האקסל שסופק; הגיליון נקרא travel_costs_09.2023 ונערך לאחרונה ב-2026-08-09. לא צוין תאריך תחולה, לכן המחירים משוערים ודורשים אימות.",
 };
@@ -530,13 +530,20 @@ export function calculateInsurerQuote(
     return errorQuote(insurerId, companyName, durationDays, "משך הנסיעה חורג מתקופת הביטוח המרבית שפורסמה לגיל הנוסעים.", underwritingRequired);
   }
 
-  let baseCents = passengerRates.reduce(
+  const ratesWithCoverageRemoval = passengerRates.map((rate) => {
+    if (!input.removeRescue || ["harel", "menora", "direct"].includes(insurerId)) {
+      return rate;
+    }
+    return {
+      ...rate,
+      dailyRates: rate.dailyRates.map((dailyRate) => Math.max(0, dailyRate - 0.2)),
+    };
+  });
+  let baseCents = ratesWithCoverageRemoval.reduce(
     (sum, rate) => sum + rate.dailyRates.reduce((total, price) => total + toCents(price), 0),
     0,
   );
-  const rescueCents = !input.removeRescue && (insurerId === "phoenix" || insurerId === "clal" || insurerId === "passportcard")
-    ? toCents(0.2) * durationDays * input.ages.length
-    : 0;
+  const rescueCents = 0;
   let addOnsCents = 0;
   const priceLines: NonNullable<InsurerQuote["priceLines"]> = [
     {
@@ -553,12 +560,21 @@ export function calculateInsurerQuote(
     priceLines.push({
       id: "rescue",
       name: "איתור, חיפוש וחילוץ",
-      description: insurerId === "clal"
-        ? "$0.20 ליום לנוסע לפי BOOK2; צד ג׳ כלול ללא תוספת"
-        : insurerId === "passportcard"
-          ? "$0.20 ליום לנוסע לפי התעריף; ניתן להסיר"
-          : "$0.20 ליום לנוסע; תעריף ההפניקס מציין שהמחיר הבסיסי אינו כולל רכיב זה",
+      description: input.removeRescue
+        ? "הוסר ממחיר הבסיס"
+        : "כלול במחיר הבסיס; לא נוספה פרמיה נפרדת",
       amount: rescueCents / 100,
+    });
+  }
+  if (["harel", "menora", "clal", "phoenix", "passportcard"].includes(insurerId)) {
+    priceLines.push({
+      id: "rescue",
+      name: "איתור, חיפוש וחילוץ",
+      description: input.removeRescue
+        ? "הוסר ממחיר הבסיס"
+        : "כלול במחיר הבסיס; לא נוספה פרמיה נפרדת",
+      amount: 0,
+      includedInBase: !input.removeRescue,
     });
   }
 
@@ -649,12 +665,7 @@ export function calculateInsurerQuote(
   if (input.removeThirdParty) {
     priceLines.push({ id: "thirdPartyRemoved", name: "צד ג׳", description: "הכיסוי הוסר; בחלק מהחברות הוא ניתן ללא תוספת מחיר.", amount: 0 });
   }
-  if (input.removeRescue && !["harel", "menora"].includes(insurerId)) {
-    priceLines.push({ id: "rescueRemoved", name: "איתור וחילוץ", description: "הכיסוי הוסר מההצעה.", amount: 0 });
-  }
-
-  const totalCents = baseCents + rescueCents + addOnsCents;
-  baseCents += rescueCents;
+  const totalCents = baseCents + addOnsCents;
   return {
     insurerId,
     companyName,

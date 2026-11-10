@@ -241,18 +241,16 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
     0,
   );
   const isLowcost = plan.id.startsWith("lowcost-");
-  const removedIncludedCents = !isLowcost
-    ? (plan.includedCoverage ?? []).reduce((sum, coverage) => {
-        const shouldRemove = coverage.name.includes("צד שלישי")
-          ? input.removeThirdParty
-          : coverage.name.includes("איתור וחילוץ")
-            ? input.removeRescue
-            : false;
-        return shouldRemove
-          ? sum + toCents(coverage.dailyValue ?? 0) * durationDays * ages.length
-          : sum;
-      }, 0)
-    : 0;
+  const removedIncludedCents = (plan.includedCoverage ?? []).reduce((sum, coverage) => {
+    const shouldRemove = coverage.name.includes("צד שלישי")
+      ? input.removeThirdParty
+      : coverage.name.includes("איתור וחילוץ")
+        ? input.removeRescue
+        : false;
+    return shouldRemove
+      ? sum + toCents(coverage.dailyValue ?? 0) * durationDays * ages.length
+      : sum;
+  }, 0);
   const basePremiumCents = grossBasePremiumCents - removedIncludedCents;
   let addOnsPremiumCents = 0;
   let coveragePremiumCents = 0;
@@ -274,7 +272,7 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
       : coverage.name.includes("איתור וחילוץ")
         ? input.removeRescue
         : false;
-    const isAdditionalCharge = isLowcost && amount > 0 && !removed;
+    const isAdditionalCharge = false;
     if (isAdditionalCharge) {
       const amountCents = Math.round(amount * 100);
       coveragePremiumCents += amountCents;
