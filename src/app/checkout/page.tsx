@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { calculateDirectInsuranceQuote } from "@/lib/direct-insurance-pricing";
@@ -17,6 +18,18 @@ const addonNames: Record<string, string> = {
   rentalCar: "ביטול השתתפות עצמית לרכב שכור",
   medical: "מצב רפואי קיים",
   cancellation: "ביטול וקיצור נסיעה",
+};
+
+const insurerLinks: Record<InsurerId | "migdal", string> = {
+  migdal:
+    "https://sites.migdal.co.il/NahalApp/#/nahal/newPolicy/firstStep?id=2147",
+  harel: "http://www.harel-group.co.il/t/HV2LQ8N9DBKZ",
+  menora: "https://ds.menoramivt.co.il/tiny-url/t/e/params?t=8Ap0_RS_",
+  passportcard:
+    "https://buy.passportcard.co.il/?AffiliateId=JoPS74PdWyQNBvYTXmYFUw%3D%3D",
+  clal: "https://www.clalbit.co.il/travelingisurance/claltravel/?txtCompID=1&txtItemID=d155ac57-efcc-45bc-b51d-54d1016b777b",
+  phoenix: "",
+  direct: "",
 };
 
 const countries = [
@@ -53,6 +66,7 @@ function CheckoutContent() {
 
   const companyId = searchParams.get("companyId") || "migdal";
   const company = searchParams.get("company") || "לא נבחרה חברה";
+  const offerUrl = insurerLinks[companyId as InsurerId | "migdal"];
 
   const destination = searchParams.get("destination") || "";
   const departure = searchParams.get("departure") || "";
@@ -67,15 +81,24 @@ function CheckoutContent() {
   const babyAgesParam = searchParams.get("babyAges") || "";
 
   const adultAges = adultAgesParam
-    ? adultAgesParam.split(",").filter((age) => age !== "").map(Number)
+    ? adultAgesParam
+        .split(",")
+        .filter((age) => age !== "")
+        .map(Number)
     : [];
 
   const childAges = childAgesParam
-    ? childAgesParam.split(",").filter((age) => age !== "").map(Number)
+    ? childAgesParam
+        .split(",")
+        .filter((age) => age !== "")
+        .map(Number)
     : [];
 
   const babyAges = babyAgesParam
-    ? babyAgesParam.split(",").filter((age) => age !== "").map(Number)
+    ? babyAgesParam
+        .split(",")
+        .filter((age) => age !== "")
+        .map(Number)
     : [];
 
   const addonsParam = searchParams.get("addons") || "";
@@ -90,7 +113,8 @@ function CheckoutContent() {
   const baggagePassengers = baggagePassengersParam
     ? baggagePassengersParam.split("|").filter(Boolean)
     : [];
-  const extremeSportsStart = searchParams.get("extremeSportsStart") || departure;
+  const extremeSportsStart =
+    searchParams.get("extremeSportsStart") || departure;
   const extremeSportsEnd = searchParams.get("extremeSportsEnd") || returnDate;
   const removeThirdParty = searchParams.get("removeThirdParty") === "true";
   const removeRescue = searchParams.get("removeRescue") === "true";
@@ -115,11 +139,12 @@ function CheckoutContent() {
     "clal",
     "phoenix",
   ];
-  const quote = companyId === "direct"
-    ? calculateDirectInsuranceQuote(quoteInput)
-    : supportedInsurers.includes(companyId as InsurerId)
-      ? calculateInsurerQuote(companyId as InsurerId, quoteInput)
-      : calculateMigdalQuote(quoteInput);
+  const quote =
+    companyId === "direct"
+      ? calculateDirectInsuranceQuote(quoteInput)
+      : supportedInsurers.includes(companyId as InsurerId)
+        ? calculateInsurerQuote(companyId as InsurerId, quoteInput)
+        : calculateMigdalQuote(quoteInput);
 
   // תמיכה במספר יעדים
   const selectedCountries = destination
@@ -129,7 +154,9 @@ function CheckoutContent() {
     .map((countryName) =>
       countries.find((country) => country.value === countryName),
     )
-    .filter(Boolean);
+    .filter(
+      (country): country is (typeof countries)[number] => country !== undefined,
+    );
 
   const destinationNames = destination
     .split(",")
@@ -201,7 +228,9 @@ function CheckoutContent() {
                     {quote.priceLines.map((line) => (
                       <div key={line.id} className="flex justify-between gap-4">
                         <span>{line.name}</span>
-                        <span className="shrink-0">${line.amount.toFixed(2)}</span>
+                        <span className="shrink-0">
+                          ${line.amount.toFixed(2)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -219,9 +248,12 @@ function CheckoutContent() {
                     {warning}
                   </p>
                 ))}
-                {"sourceNote" in quote && typeof quote.sourceNote === "string" && (
-                  <p className="mt-2 text-xs text-gray-500">{quote.sourceNote}</p>
-                )}
+                {"sourceNote" in quote &&
+                  typeof quote.sourceNote === "string" && (
+                    <p className="mt-2 text-xs text-gray-500">
+                      {quote.sourceNote}
+                    </p>
+                  )}
               </div>
             </div>
           </div>
@@ -238,17 +270,20 @@ function CheckoutContent() {
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   {selectedCountries.map((country) => (
                     <div
-                      key={country!.value}
+                      key={country.value}
                       className="flex items-center gap-2 rounded-lg bg-white px-2 py-1 shadow-sm"
                     >
-                      <img
-                        src={`https://flagcdn.com/w80/${country!.flag}.png`}
-                        alt={`דגל ${country!.value}`}
+                      <Image
+                        src={`https://flagcdn.com/w80/${country.flag}.png`}
+                        alt={`דגל ${country.value}`}
+                        width={36}
+                        height={24}
+                        unoptimized
                         className="h-6 w-9 rounded object-cover"
                       />
 
                       <span className="font-bold text-gray-900">
-                        {country!.value}
+                        {country.value}
                       </span>
                     </div>
                   ))}
@@ -377,6 +412,9 @@ function CheckoutContent() {
           <div className="rounded-2xl bg-white p-6 shadow-md">
             <button
               type="button"
+              onClick={() => {
+                if (offerUrl) window.location.assign(offerUrl);
+              }}
               className="w-full rounded-xl bg-green-500 py-4 text-lg font-bold text-white transition hover:bg-green-600"
             >
               המשך להצעה
