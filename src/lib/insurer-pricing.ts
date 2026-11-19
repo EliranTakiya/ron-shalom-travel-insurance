@@ -55,7 +55,7 @@ const sourceNotes: Record<InsurerId, string> = {
   menora: "מחירון מנורה 2026; תעריפי בסיס, ביטול/קיצור ומצב רפואי קודם לפי טבלאות הגיל.",
   passportcard:
     "מחירון 2026 של שוק הביטוח הושווה לתעריפון PassportCard הרשמי מנובמבר 2025: מחיר ארה״ב באתר הוא מחיר העולם בתוספת ארה״ב מהיום הראשון בנסיעות של 31 ימים ומעלה.",
-  clal: "מחירון כלל BOOK2 שסופק: תעריף הבסיס כולל את כיסויי הבסיס; הסרת איתור וחילוץ מנכה $0.20 ליום לנוסע, וצד ג׳ ללא תוספת.",
+  clal: "תעריפי כלל שסופקו: ביטוח בסיס $2.30 ליום בעולם ו-$3.45 ליום בארה״ב; איתור וחילוץ $0.20 ליום לנוסע מתומחר בנפרד.",
   phoenix:
     "מחירון הפניקס 2026 לאחר הנחת רכישה מקוונת של 10% על הכיסוי הבסיסי; איתור וחילוץ נכלל בבסיס, והסרתו מנכה $0.20 ליום לנוסע.",
   direct:
@@ -105,24 +105,24 @@ const menoraUsaBands: AgeBand[] = [
 ];
 
 const clalWorldBands: AgeBand[] = [
-  { from: 0, to: 18, price: 1.72 },
+  { from: 0, to: 18, price: 2.3 },
   { from: 19, to: 60, price: 2.3 },
-  { from: 61, to: 65, price: 3.6 },
-  { from: 66, to: 70, price: 4.55 },
-  { from: 71, to: 75, price: 6.8 },
-  { from: 76, to: 80, price: 12.3 },
-  { from: 81, to: 85, price: 14.3 },
-  { from: 86, to: null, price: 19.8 },
+  { from: 61, to: 65, price: 2.3 },
+  { from: 66, to: 70, price: 2.3 },
+  { from: 71, to: 75, price: 2.3 },
+  { from: 76, to: 80, price: 2.3 },
+  { from: 81, to: 85, price: 2.3 },
+  { from: 86, to: null, price: 2.3 },
 ];
 
 const clalUsaBands: AgeBand[] = [
-  { from: 0, to: 60, price: 3.448333333 },
-  { from: 61, to: 65, price: 6.548333333 },
-  { from: 66, to: 70, price: 9.8 },
-  { from: 71, to: 75, price: 12 },
-  { from: 76, to: 80, price: 22 },
-  { from: 81, to: 85, price: 22 },
-  { from: 86, to: null, price: 32 },
+  { from: 0, to: 60, price: 3.45 },
+  { from: 61, to: 65, price: 3.45 },
+  { from: 66, to: 70, price: 3.45 },
+  { from: 71, to: 75, price: 3.45 },
+  { from: 76, to: 80, price: 3.45 },
+  { from: 81, to: 85, price: 3.45 },
+  { from: 86, to: null, price: 3.45 },
 ];
 
 const phoenixBands = [
@@ -412,7 +412,7 @@ const getBaseDailyRate = (
   }
 
   if (insurerId === "clal") {
-    const band = findBand(age, isUsa || isAmericas ? clalUsaBands : clalWorldBands);
+    const band = findBand(age, isUsa ? clalUsaBands : clalWorldBands);
     if (!band) return { dailyRates: [], underwritingRequired: false, error: "לא פורסם תעריף כלל לגיל זה." };
     return {
       dailyRates: Array(durationDays).fill(band.price),
@@ -531,7 +531,7 @@ export function calculateInsurerQuote(
   }
 
   const ratesWithCoverageRemoval = passengerRates.map((rate) => {
-    if (!input.removeRescue || ["harel", "menora", "direct"].includes(insurerId)) {
+    if (!input.removeRescue || ["harel", "menora", "clal", "direct"].includes(insurerId)) {
       return rate;
     }
     return {
@@ -543,7 +543,10 @@ export function calculateInsurerQuote(
     (sum, rate) => sum + rate.dailyRates.reduce((total, price) => total + toCents(price), 0),
     0,
   );
-  const rescueCents = 0;
+  const rescueCents =
+    insurerId === "clal" && !input.removeRescue
+      ? input.ages.length * durationDays * 20
+      : 0;
   let addOnsCents = 0;
   const priceLines: NonNullable<InsurerQuote["priceLines"]> = [
     {
@@ -556,25 +559,20 @@ export function calculateInsurerQuote(
       amount: baseCents / 100,
     },
   ];
-  if (rescueCents > 0) {
-    priceLines.push({
-      id: "rescue",
-      name: "איתור, חיפוש וחילוץ",
-      description: input.removeRescue
-        ? "הוסר ממחיר הבסיס"
-        : "כלול במחיר הבסיס; לא נוספה פרמיה נפרדת",
-      amount: rescueCents / 100,
-    });
-  }
   if (["harel", "menora", "clal", "phoenix", "passportcard"].includes(insurerId)) {
     priceLines.push({
       id: "rescue",
       name: "איתור, חיפוש וחילוץ",
-      description: input.removeRescue
-        ? "הוסר ממחיר הבסיס"
-        : "כלול במחיר הבסיס; לא נוספה פרמיה נפרדת",
-      amount: 0,
-      includedInBase: !input.removeRescue,
+      description:
+        insurerId === "clal"
+          ? input.removeRescue
+            ? "הוסר מהמחיר"
+            : "$0.20 ליום לנוסע; מחושב בנפרד מביטוח הבסיס"
+          : input.removeRescue
+            ? "הוסר ממחיר הבסיס"
+            : "כלול במחיר הבסיס; לא נוספה פרמיה נפרדת",
+      amount: rescueCents / 100,
+      includedInBase: insurerId === "clal" ? false : !input.removeRescue,
     });
   }
 
@@ -665,7 +663,7 @@ export function calculateInsurerQuote(
   if (input.removeThirdParty) {
     priceLines.push({ id: "thirdPartyRemoved", name: "צד ג׳", description: "הכיסוי הוסר; בחלק מהחברות הוא ניתן ללא תוספת מחיר.", amount: 0 });
   }
-  const totalCents = baseCents + addOnsCents;
+  const totalCents = baseCents + rescueCents + addOnsCents;
   return {
     insurerId,
     companyName,
