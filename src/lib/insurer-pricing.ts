@@ -1,3 +1,5 @@
+import { coveredAges, type PassengerSelections } from "@/lib/coverage-selection";
+
 export type InsurerId = "harel" | "menora" | "passportcard" | "clal" | "phoenix" | "direct";
 
 export type InsurerQuoteInput = {
@@ -7,6 +9,7 @@ export type InsurerQuoteInput = {
   ages: number[];
   selectedAddons: string[];
   baggagePassengerCount: number;
+  passengerSelections?: PassengerSelections;
   extremeSportsStart?: string;
   extremeSportsEnd?: string;
   removeThirdParty?: boolean;
@@ -304,7 +307,7 @@ const addonPrice = (
       return null;
     case "clal":
       if (addon === "baggage") return { dailyPrice: 0.36, coverage: "כבודה עד $2,500" };
-      if (addon === "phone" || addon === "laptop" || addon === "devices") return { dailyPrice: 1.32, coverage: "טלפון, מחשב נייד ומצלמה; עד שתי הרחבות למבוטח" };
+      if (addon === "phone" || addon === "laptop" || addon === "devices" || addon === "camera") return { dailyPrice: 1.32, coverage: "טלפון, מחשב נייד ומצלמה; עד שתי הרחבות למבוטח" };
       if (addon === "cancellation") {
         const price = byAge([
           { from: 0, to: 30, price: 0.29 }, { from: 31, to: 40, price: 0.46 },
@@ -356,6 +359,7 @@ const addonPrice = (
       if (addon === "baggage") return { dailyPrice: 0.5, coverage: "כבודה עד $2,500" };
       if (addon === "phone") return { dailyPrice: 1.6, maximumTripPrice: 89.6, coverage: "טלפון עד $800" };
       if (addon === "laptop") return { dailyPrice: 0.5, coverage: "מחשב נייד/מצלמה עד $750" };
+      if (addon === "camera") return { dailyPrice: 0.5, coverage: "מחשב נייד/מצלמה עד $750" };
       if (addon === "cancellation") return { dailyPrice: 0.8, maximumTripPrice: 16, coverage: "ביטול/קיצור עד $4,000" };
       if (addon === "medical") {
         const price = byAge([
@@ -501,6 +505,9 @@ export function calculateInsurerQuote(
     if (insurerId === "passportcard" && addon === "laptop" && scopedAddons.some((item) => ["laptop1500", "laptop2000"].includes(item))) return false;
     return true;
   });
+  if (insurerId === "harel" && selectedAddons.includes("valuableItem") && !selectedAddons.includes("baggage")) {
+    return errorQuote(insurerId, companyName, durationDays, "כיסוי פריט יקר ערך בהראל מחייב בחירת כיסוי כבודה.");
+  }
   const selectedSportsDays = inclusiveDays(
     input.extremeSportsStart || input.departure,
     input.extremeSportsEnd || input.returnDate,
@@ -578,21 +585,22 @@ export function calculateInsurerQuote(
     });
   }
 
-  const billedAddons = insurerId === "clal" && (selectedAddons.includes("phone") || selectedAddons.includes("laptop"))
-    ? [...selectedAddons.filter((addon) => addon !== "phone" && addon !== "laptop"), "devices"]
-    : selectedAddons;
+  const combinedDevices = insurerId === "clal" && selectedAddons.some((addon) => ["phone", "laptop", "camera"].includes(addon));
+  const combinedPassportCamera = insurerId === "passportcard" && selectedAddons.includes("camera") && selectedAddons.includes("laptop");
+  const billedAddons = combinedDevices
+    ? [...selectedAddons.filter((addon) => !["phone", "laptop", "camera"].includes(addon)), "devices"]
+    : combinedPassportCamera ? selectedAddons.filter((addon) => addon !== "laptop") : selectedAddons;
   const warnings: string[] = [];
 
   for (const addon of billedAddons) {
     const addonDays = addon === "extremeSports" && insurerId !== "passportcard"
       ? sportsCoverageDays ?? durationDays
       : durationDays;
-    const coveredPassengers = addon === "baggage"
-      ? Math.min(input.ages.length, input.baggagePassengerCount || input.ages.length)
-      : input.ages.length;
+    const addonAges = addon === "devices" && !selectedAddons.includes("camera")
+      ? input.ages.filter((_, index) => ["phone", "laptop"].some((id) => selectedAddons.includes(id) && (!input.passengerSelections?.[id as "phone" | "laptop"] || input.passengerSelections[id as "phone" | "laptop"]?.includes(index))))
+      : coveredAges(input.ages, addon, input.passengerSelections, input.baggagePassengerCount);
     let addonCents = 0;
-    for (let passengerIndex = 0; passengerIndex < coveredPassengers; passengerIndex += 1) {
-      const age = input.ages[passengerIndex];
+    for (const age of addonAges) {
       const price = addonPrice(insurerId, addon, age, isUsa, addonDays);
       if (!price) {
         return errorQuote(
@@ -633,6 +641,9 @@ export function calculateInsurerQuote(
           rentalCar: "רכב שכור",
           medical: "מצב רפואי קודם",
           cancellation: "ביטול וקיצור נסיעה",
+          personalAccident: "תאונות אישיות",
+          valuableItem: "פריט יקר ערך",
+          camera: "מצלמה",
         } as Record<string, string>)[addon] ?? addon;
     const lineDescription = [
       addonPrice(insurerId, addon, input.ages[0], isUsa, addonDays)?.coverage,

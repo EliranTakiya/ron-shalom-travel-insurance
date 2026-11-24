@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import SearchForm from "@/components/SearchForm";
 import PassengerForm from "@/components/PassengerForm";
 import AddonsForm from "@/components/AddonsForm";
+import type { PassengerSelections } from "@/lib/coverage-selection";
 // import AccessibilityButton from "@/components/AccessibilityButton";
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
   const [babyAges, setBabyAges] = useState<(number | null)[]>([]);
 
   const [addons, setAddons] = useState<string[]>([]);
+  const [passengerSelections, setPassengerSelections] = useState<PassengerSelections>({});
   const [removeThirdParty, setRemoveThirdParty] = useState(false);
   const [removeRescue, setRemoveRescue] = useState(false);
   const [club, setClub] = useState("");
@@ -42,6 +44,7 @@ export default function Home() {
 
   const [calendarOpen, setCalendarOpen] = useState(false);
   const STORAGE_KEY = "ron-shalom-trip-data";
+  const [tripRestored, setTripRestored] = useState(false);
 
   const [contactStatus, setContactStatus] = useState("");
   const [contactSending, setContactSending] = useState(false);
@@ -94,6 +97,10 @@ export default function Home() {
         setAddons(data.addons);
       }
 
+      if (data.passengerSelections && typeof data.passengerSelections === "object") {
+        setPassengerSelections(data.passengerSelections);
+      }
+
       if (typeof data.removeThirdParty === "boolean") {
         setRemoveThirdParty(data.removeThirdParty);
       }
@@ -107,10 +114,13 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Failed to restore trip data:", error);
+    } finally {
+      setTripRestored(true);
     }
   }, []);
 
   useEffect(() => {
+    if (!tripRestored) return;
     try {
       const data = {
         destination,
@@ -123,6 +133,7 @@ export default function Home() {
         childAges,
         babyAges,
         addons,
+        passengerSelections,
         removeThirdParty,
         removeRescue,
         club,
@@ -136,6 +147,7 @@ export default function Home() {
       console.error("Failed to save trip data:", error);
     }
   }, [
+    tripRestored,
     destination,
     departure,
     returnDate,
@@ -146,6 +158,7 @@ export default function Home() {
     childAges,
     babyAges,
     addons,
+    passengerSelections,
     removeThirdParty,
     removeRescue,
     club,
@@ -192,6 +205,7 @@ export default function Home() {
     setBabyAges([]);
 
     setAddons([]);
+    setPassengerSelections({});
     setRemoveThirdParty(false);
     setRemoveRescue(false);
     setClub("");
@@ -1018,11 +1032,20 @@ export default function Home() {
               >
                 <PassengerForm
                   adults={adults}
-                  setAdults={setAdults}
+                  setAdults={(value) => {
+                    if (value !== adults) setPassengerSelections({});
+                    setAdults(value);
+                  }}
                   children={children}
-                  setChildren={setChildren}
+                  setChildren={(value) => {
+                    if (value !== children) setPassengerSelections({});
+                    setChildren(value);
+                  }}
                   babies={babies}
-                  setBabies={setBabies}
+                  setBabies={(value) => {
+                    if (value !== babies) setPassengerSelections({});
+                    setBabies(value);
+                  }}
                   adultAges={adultAges}
                   setAdultAges={setAdultAges}
                   childAges={childAges}
@@ -1053,6 +1076,8 @@ export default function Home() {
                 <AddonsForm
                   addons={addons}
                   setAddons={setAddons}
+                  passengerSelections={passengerSelections}
+                  setPassengerSelections={setPassengerSelections}
                   removeThirdParty={removeThirdParty}
                   setRemoveThirdParty={setRemoveThirdParty}
                   removeRescue={removeRescue}

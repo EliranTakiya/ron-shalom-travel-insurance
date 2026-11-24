@@ -2,11 +2,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { coverageInsurerNames, limitedCoverages, passengerAddonIds, type PassengerAddonId, type PassengerSelections } from "@/lib/coverage-selection";
 
 type AddonsFormProps = {
   addons: string[];
   setAddons: (value: string[]) => void;
+  passengerSelections: PassengerSelections;
+  setPassengerSelections: Dispatch<SetStateAction<PassengerSelections>>;
   removeThirdParty: boolean;
   setRemoveThirdParty: (value: boolean) => void;
   removeRescue: boolean;
@@ -24,6 +27,11 @@ type AddonsFormProps = {
 };
 
 const addonOptions = [
+  {
+    id: "cancellation",
+    title: "ביטול וקיצור נסיעה",
+    description: "כיסוי בהתאם לתנאי הפוליסה",
+  },
   {
     id: "phone",
     title: "כיסוי לטלפון נייד",
@@ -69,13 +77,12 @@ const addonOptions = [
     title: "מצב רפואי קיים",
     description: "הרחבה בהתאם לתנאי הפוליסה",
   },
-  {
-    id: "cancellation",
-    title: "ביטול וקיצור נסיעה",
-    description: "כיסוי בהתאם לתנאי הפוליסה",
-  },
+  { id: "personalAccident", title: "תאונות אישיות", description: "בהתאם לתנאי חברת הביטוח" },
+  { id: "valuableItem", title: "פריט יקר ערך", description: "בהראל נדרש גם כיסוי כבודה" },
+  { id: "camera", title: "מצלמה", description: "בהתאם לתנאי חברת הביטוח" },
 ];
 
+/*
 const companyAddonOptions = [
   { id: "harel:valuableItem", company: "הראל", title: "פריט יקר ערך", description: "$1 ליום; נדרש גם כיסוי כבודה" },
   { id: "harel:personalAccident", company: "הראל", title: "תאונות אישיות", description: "$0.25-$1.08 ליום, עד גיל 70" },
@@ -105,10 +112,13 @@ const exclusiveAddonGroups = [
   ["harel:bicycle2500", "harel:bicycle4500", "harel:bicycle6000"],
   ["passportcard:laptop1500", "passportcard:laptop2000"],
 ];
+*/
 
 export default function AddonsForm({
   addons,
   setAddons,
+  passengerSelections: savedPassengerSelections,
+  setPassengerSelections,
   removeThirdParty,
   setRemoveThirdParty,
   removeRescue,
@@ -130,6 +140,11 @@ export default function AddonsForm({
   const [showBaggageNotice, setShowBaggageNotice] = useState(false);
   const [showBaggagePassenger, setShowBaggagePassenger] = useState(false);
   const [showExtremeSportsDates, setShowExtremeSportsDates] = useState(false);
+  const [limitedNotice, setLimitedNotice] = useState<string | null>(null);
+  const [passengerDialog, setPassengerDialog] = useState<PassengerAddonId | null>(null);
+  const passengerSelections: PassengerSelections = adults + children + babies === 1
+    ? Object.fromEntries(passengerAddonIds.filter((id) => addons.includes(id)).map((id) => [id, [0]]))
+    : savedPassengerSelections;
   const [extremeSportsStart, setExtremeSportsStart] = useState(departure);
   const [extremeSportsEnd, setExtremeSportsEnd] = useState(returnDate);
   const [sportsCalendarMonth, setSportsCalendarMonth] = useState(() => new Date());
@@ -198,6 +213,10 @@ export default function AddonsForm({
     if (addons.includes(id)) {
       setAddons(addons.filter((addon) => addon !== id));
 
+      if (passengerAddonIds.includes(id as PassengerAddonId)) {
+        setPassengerSelections((current) => ({ ...current, [id]: [] }));
+        setPassengerDialog(null);
+      }
       if (id === "baggage") {
         setBaggagePassengers([]);
         setShowBaggagePassenger(false);
@@ -211,15 +230,16 @@ export default function AddonsForm({
       return;
     }
 
-    const exclusiveGroup = exclusiveAddonGroups.find((group) => group.includes(id));
-    setAddons([
-      ...addons.filter((addon) => !exclusiveGroup?.includes(addon)),
-      id,
-    ]);
+    setAddons([...addons, id]);
 
-    if (id === "baggage") {
-      setShowBaggageNotice(true);
+    if (passengerAddonIds.includes(id as PassengerAddonId)) {
+      if (adults + children + babies === 1) {
+        setPassengerSelections((current) => ({ ...current, [id]: [0] }));
+      } else {
+        setPassengerDialog(id as PassengerAddonId);
+      }
     }
+    if (limitedCoverages[id]) setLimitedNotice(id);
 
     if (id === "extremeSports") {
       setExtremeSportsStart(departure);
@@ -310,11 +330,9 @@ export default function AddonsForm({
   const goToResults = () => {
     if (!canCompare) return;
 
-    if (
-      addons.includes("baggage") &&
-      baggagePassengers.length === 0
-    ) {
-      setShowBaggagePassenger(true);
+    const missingPassengerAddon = passengerAddonIds.find((id) => addons.includes(id) && !passengerSelections[id]?.length);
+    if (missingPassengerAddon) {
+      setPassengerDialog(missingPassengerAddon);
       return;
     }
 
@@ -346,7 +364,8 @@ export default function AddonsForm({
       removeRescue: removeRescue.toString(),
 
       // כל הנוסעים שנבחרו לכבודה
-      baggagePassengers: baggagePassengers.join("|"),
+      baggagePassengers: (passengerSelections.baggage ?? []).map((index) => getPassengerOptions()[index]).filter(Boolean).join("|"),
+      ...Object.fromEntries(passengerAddonIds.map((id) => [`${id}PassengerIndexes`, (passengerSelections[id] ?? []).join(",")])),
     });
 
     router.push(`/results/?${params.toString()}`);
@@ -355,11 +374,9 @@ export default function AddonsForm({
   const handleCompare = () => {
     if (!canCompare) return;
 
-    if (
-      addons.includes("baggage") &&
-      baggagePassengers.length === 0
-    ) {
-      setShowBaggagePassenger(true);
+    const missingPassengerAddon = passengerAddonIds.find((id) => addons.includes(id) && !passengerSelections[id]?.length);
+    if (missingPassengerAddon) {
+      setPassengerDialog(missingPassengerAddon);
       return;
     }
 
@@ -492,6 +509,7 @@ export default function AddonsForm({
           <p role="alert" className="mt-2 text-sm font-medium text-red-700">יש לבחור טווח ספורט אתגרי תקין בתוך תאריכי הנסיעה.</p>
         )}
 
+        {/*
         <h3 className="mt-8 text-lg font-bold text-gray-900">
           הרחבות מיוחדות לפי חברה
         </h3>
@@ -531,7 +549,15 @@ export default function AddonsForm({
             );
           })}
         </div>
+        */}
         </section>
+
+        {passengerAddonIds.filter((id) => addons.includes(id) && passengerSelections[id]?.length).map((id) => (
+          <div key={id} className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4">
+            <div className="font-bold text-green-900">{addonOptions.find((option) => option.id === id)?.title}: {(passengerSelections[id] ?? []).map((index) => passengerOptions[index]).filter(Boolean).join(", ")}</div>
+            {passengerOptions.length > 1 && <button type="button" className="mt-2 text-sm font-bold text-blue-700 underline" onClick={() => setPassengerDialog(id)}>שינוי מבוטחים</button>}
+          </div>
+        ))}
 
         {/* הצגת המבוטחים שאליהם משויכת הכבודה */}
         {addons.includes("baggage") &&
@@ -583,6 +609,30 @@ export default function AddonsForm({
       )}
 
       {/* פופאפ - הודעה חשובה לגבי כבודה */}
+      {limitedNotice && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/60 p-4">
+          <section role="dialog" aria-modal="true" aria-labelledby="limited-coverage-title" className="w-full max-w-md rounded-xl bg-white p-6 text-center shadow-xl">
+            <h3 id="limited-coverage-title" className="text-xl font-bold">שים לב</h3>
+            <p className="mt-4 text-gray-700">לפי המידע במערכת, {limitedCoverages[limitedNotice].insurers.length} חברות מציעות את הכיסוי {limitedCoverages[limitedNotice].name}: {limitedCoverages[limitedNotice].insurers.map((id) => coverageInsurerNames[id]).join(", ")}. במסך התוצאות יוצגו תחילה הצעות מהחברות שמבטחות את הכיסוי, ולאחריהן הצעות ללא הכיסוי.</p>
+            <button type="button" onClick={() => setLimitedNotice(null)} className="mt-6 w-full rounded-lg bg-blue-700 px-4 py-3 font-bold text-white">הראה במסך התוצאות</button>
+          </section>
+        </div>
+      )}
+      {passengerDialog && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4">
+          <section role="dialog" aria-modal="true" aria-labelledby="passenger-selection-title" className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
+            <h3 id="passenger-selection-title" className="text-xl font-bold">עבור אילו מבוטחים? {addonOptions.find((option) => option.id === passengerDialog)?.title}</h3>
+            <div className="mt-4 space-y-2">
+              {passengerOptions.map((passenger, index) => {
+                const selected = (passengerSelections[passengerDialog] ?? []).includes(index);
+                return <button key={passenger} type="button" aria-pressed={selected} onClick={() => setPassengerSelections((current) => ({ ...current, [passengerDialog]: selected ? (current[passengerDialog] ?? []).filter((item) => item !== index) : [...(current[passengerDialog] ?? []), index] }))} className={`w-full rounded-lg border-2 p-3 text-right ${selected ? "border-green-500 bg-green-50" : "border-gray-200"}`}>{selected ? "✓ " : ""}{passenger}</button>;
+              })}
+            </div>
+            <button type="button" disabled={!passengerSelections[passengerDialog]?.length} onClick={() => setPassengerDialog(null)} className="mt-5 w-full rounded-lg bg-green-600 p-3 font-bold text-white disabled:bg-gray-300">אישור בחירה</button>
+            <button type="button" onClick={() => setPassengerDialog(null)} className="mt-2 w-full rounded-lg border p-3">ביטול</button>
+          </section>
+        </div>
+      )}
       {showBaggageNotice && (
         <div
           className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4"

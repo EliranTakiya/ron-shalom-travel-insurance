@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Fragment, Suspense, useEffect, useState } from "react";
+import { addonsForInsurer, limitedCoverages, missingCoverages, parsePassengerSelections, passengerAddonIds } from "@/lib/coverage-selection";
+import { countries } from "@/lib/countries";
 import { calculateDirectInsuranceQuote } from "@/lib/direct-insurance-pricing";
 import {
   calculateInsurerQuote,
@@ -19,6 +21,8 @@ type InsuranceCompany = {
   quote: Quote;
   color: string;
   recommended: boolean;
+  includedAddons: string[];
+  missingAddons: string[];
   details: {
     medical: string;
     baggage: string;
@@ -47,6 +51,9 @@ const addonNames: Record<string, string> = {
   rentalCar: "ביטול השתתפות עצמית לרכב שכור",
   medical: "מצב רפואי קיים",
   cancellation: "ביטול וקיצור נסיעה",
+  personalAccident: "תאונות אישיות",
+  valuableItem: "פריט יקר ערך",
+  camera: "מצלמה",
   "harel:valuableItem": "הראל · פריט יקר ערך",
   "harel:personalAccident": "הראל · תאונות אישיות",
   "harel:extremeSportsAccident": "הראל · תאונות אישיות בספורט אתגרי",
@@ -120,6 +127,7 @@ function ResultsContent() {
   const removeRescue = searchParams.get("removeRescue") === "true";
 
   const passengerAges = [...adultAges, ...childAges, ...babyAges];
+  const passengerSelections = parsePassengerSelections(searchParams);
   const quoteInput = {
     destination,
     departure,
@@ -127,12 +135,13 @@ function ResultsContent() {
     ages: passengerAges,
     selectedAddons,
     baggagePassengerCount: baggagePassengers.length,
+    passengerSelections,
     extremeSportsStart,
     extremeSportsEnd,
     removeThirdParty,
     removeRescue,
   };
-  const migdalQuote = calculateMigdalQuote(quoteInput);
+  const migdalQuote = calculateMigdalQuote({ ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, "migdal") });
   const insurerIds: InsurerId[] = [
     "harel",
     "menora",
@@ -142,9 +151,9 @@ function ResultsContent() {
   ];
   const quotesById: Record<string, Quote> = {
     migdal: migdalQuote,
-    direct: calculateDirectInsuranceQuote(quoteInput),
+    direct: calculateDirectInsuranceQuote({ ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, "direct") }),
     ...Object.fromEntries(
-      insurerIds.map((id) => [id, calculateInsurerQuote(id, quoteInput)]),
+      insurerIds.map((id) => [id, calculateInsurerQuote(id, { ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, id) })]),
     ),
   };
   const companyConfigs = [
@@ -169,6 +178,8 @@ function ResultsContent() {
         quote: companyQuote,
         color,
         recommended: false,
+        includedAddons: addonsForInsurer(selectedAddons, id),
+        missingAddons: missingCoverages(selectedAddons, id),
         details: {
           medical: `כיסוי רפואי בהתאם לתנאי הפוליסה של ${name}`,
           baggage: lineDescription("baggage", "כיסוי מטען אישי בהתאם לתנאי הפוליסה"),
@@ -178,7 +189,9 @@ function ResultsContent() {
         },
       }];
     },
-  );
+  ).sort((first, second) => Number(first.missingAddons.length > 0) - Number(second.missingAddons.length > 0));
+  const missingCoverageNames = [...new Set(insuranceCompanies.flatMap((company) => company.missingAddons))]
+    .map((id) => limitedCoverages[id].name);
   const unavailableQuotes = companyConfigs.flatMap(({ id, name }) => {
     const companyQuote = quotesById[id];
     return companyQuote.price === null && companyQuote.error
@@ -186,35 +199,6 @@ function ResultsContent() {
       : [];
   });
   const tripDurationDays = migdalQuote.durationDays;
-
-  const countries = [
-    { value: "צרפת", flag: "fr" },
-    { value: "איטליה", flag: "it" },
-    { value: "ספרד", flag: "es" },
-    { value: "גרמניה", flag: "de" },
-    { value: "יוון", flag: "gr" },
-    { value: "פורטוגל", flag: "pt" },
-    { value: "בריטניה", flag: "gb" },
-    { value: "הולנד", flag: "nl" },
-    { value: "אוסטריה", flag: "at" },
-    { value: "שווייץ", flag: "ch" },
-    { value: "ארצות הברית", flag: "us" },
-    { value: "קנדה", flag: "ca" },
-    { value: "מקסיקו", flag: "mx" },
-    { value: "תאילנד", flag: "th" },
-    { value: "יפן", flag: "jp" },
-    { value: "סין", flag: "cn" },
-    { value: "דרום קוריאה", flag: "kr" },
-    { value: "אוסטרליה", flag: "au" },
-    { value: "ניו זילנד", flag: "nz" },
-    { value: "ברזיל", flag: "br" },
-    { value: "ארגנטינה", flag: "ar" },
-    { value: "צ׳ילה", flag: "cl" },
-    { value: "פרו", flag: "pe" },
-    { value: "דרום אפריקה", flag: "za" },
-    { value: "מצרים", flag: "eg" },
-    { value: "מרוקו", flag: "ma" },
-  ];
 
   // תמיכה גם במספר מדינות
   const selectedCountries = destination
@@ -286,6 +270,7 @@ function ResultsContent() {
 
       // מעביר את כל המבוטחים לכבודה
       baggagePassengers: baggagePassengers.join("|"),
+      ...Object.fromEntries(passengerAddonIds.map((id) => [`${id}PassengerIndexes`, searchParams.get(`${id}PassengerIndexes`) ?? ""])),
     });
   };
 
@@ -470,11 +455,14 @@ function ResultsContent() {
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {insuranceCompanies.map((company) => (
+          {insuranceCompanies.map((company, index) => (
+            <Fragment key={company.id}>
+            {index === 0 && selectedAddons.some((id) => limitedCoverages[id]) && company.missingAddons.length === 0 && <h2 className="font-bold text-gray-900 md:col-span-2 lg:col-span-3">הצעות הכוללות את כל ההרחבות שנבחרו</h2>}
+            {company.missingAddons.length > 0 && (index === 0 || insuranceCompanies[index - 1].missingAddons.length === 0) && <h2 className="mt-4 font-bold text-amber-900 md:col-span-2 lg:col-span-3">הצעות מחברות שאינן מכסות את כל ההרחבות שנבחרו: {missingCoverageNames.join(", ")}. הכיסוי החסר מצוין בכל הצעה.</h2>}
             <div
-              key={company.name}
               className="relative rounded-2xl bg-white p-6 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
             >
+              {company.missingAddons.length > 0 && <p className="mb-4 rounded-lg bg-amber-50 p-3 text-sm font-bold text-amber-900">ללא כיסוי: {company.missingAddons.map((id) => limitedCoverages[id].name).join(", ")}</p>}
               {/* Recommended */}
               {company.recommended && (
                 <div className="absolute -top-3 right-5 rounded-full bg-yellow-400 px-4 py-1 text-sm font-bold text-yellow-900">
@@ -528,38 +516,39 @@ function ResultsContent() {
               <div className="mt-5 space-y-2 text-sm text-gray-700">
                 <div>✓ כיסוי רפואי</div>
 
-                {selectedAddons.includes("phone") && (
+                {company.includedAddons.includes("phone") && (
                     <div>✓ כיסוי לטלפון נייד</div>
                   )}
 
-                {selectedAddons.includes("laptop") && (
+                {company.includedAddons.includes("laptop") && (
                   <div>✓ טאבלט או מחשב נייד</div>
                 )}
 
-                {selectedAddons.includes("baggage") && (
+                {company.includedAddons.includes("baggage") && (
                     <div>✓ כיסוי כבודה</div>
                   )}
 
-                {selectedAddons.includes("pregnancy") && (
+                {company.includedAddons.includes("pregnancy") && (
                     <div>✓ הרחבת הריון</div>
                   )}
 
-                {selectedAddons.includes("extremeSports") && (
+                {company.includedAddons.includes("extremeSports") && (
                     <div>✓ ספורט אתגרי</div>
                   )}
 
-                {selectedAddons.includes("ski") && (
+                {company.includedAddons.includes("ski") && (
                     <div>✓ סקי וספורט חורף</div>
                   )}
 
-                {selectedAddons.includes("medical") && (
+                {company.includedAddons.includes("medical") && (
                     <div>✓ מצב רפואי קיים</div>
                   )}
 
-                {selectedAddons.includes("cancellation") && (
+                {company.includedAddons.includes("cancellation") && (
                     <div>✓ ביטול וקיצור נסיעה</div>
                   )}
 
+                {company.includedAddons.filter((id) => limitedCoverages[id]).map((id) => <div key={id}>✓ {limitedCoverages[id].name}</div>)}
                 <div>✓ שירות 24/7</div>
               </div>
 
@@ -586,6 +575,7 @@ function ResultsContent() {
                 </button>
               </div>
             </div>
+            </Fragment>
           ))}
         </div>
         {unavailableQuotes.length > 0 && (

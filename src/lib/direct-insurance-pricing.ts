@@ -1,5 +1,6 @@
 import tariff from "@/data/direct-insurance-prices.json";
 import type { InsurerQuote, InsurerQuoteInput } from "@/lib/insurer-pricing";
+import { coveredAges } from "@/lib/coverage-selection";
 
 type RateBand = {
   ageFrom: number;
@@ -201,17 +202,15 @@ export function calculateDirectInsuranceQuote(
       : "rates" in tariffValue
         ? tariffValue.rates
         : tariffValue[region];
-    const coveredPassengers = addonId === "baggage"
-      ? Math.min(input.ages.length, input.baggagePassengerCount || input.ages.length)
-      : input.ages.length;
+    const addonAges = coveredAges(input.ages, addonId, input.passengerSelections, input.baggagePassengerCount);
     let addonCents = 0;
 
-    for (let index = 0; index < coveredPassengers; index += 1) {
-      const dailyRate = findRate(input.ages[index], rates);
+    for (const age of addonAges) {
+      const dailyRate = findRate(age, rates);
       if (dailyRate === undefined) {
         return errorQuote(
           durationDays,
-          `לא פורסם בקובץ תעריף ביטוח ישיר להרחבת ${definition.name} עבור גיל ${input.ages[index]}.`,
+          `לא פורסם בקובץ תעריף ביטוח ישיר להרחבת ${definition.name} עבור גיל ${age}.`,
         );
       }
       const addonDurationDays = addonId === "extremeSports" ? extremeSportsDays ?? durationDays : durationDays;

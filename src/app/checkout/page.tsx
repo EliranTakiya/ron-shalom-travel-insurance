@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { addonsForInsurer, limitedCoverages, missingCoverages, parsePassengerSelections } from "@/lib/coverage-selection";
+import { countries } from "@/lib/countries";
 import { calculateDirectInsuranceQuote } from "@/lib/direct-insurance-pricing";
 import { calculateInsurerQuote, type InsurerId } from "@/lib/insurer-pricing";
 import { calculateMigdalQuote } from "@/lib/migdal-pricing";
@@ -18,6 +20,9 @@ const addonNames: Record<string, string> = {
   rentalCar: "ביטול השתתפות עצמית לרכב שכור",
   medical: "מצב רפואי קיים",
   cancellation: "ביטול וקיצור נסיעה",
+  personalAccident: "תאונות אישיות",
+  valuableItem: "פריט יקר ערך",
+  camera: "מצלמה",
 };
 
 const insurerLinks: Record<InsurerId | "migdal", string> = {
@@ -31,35 +36,6 @@ const insurerLinks: Record<InsurerId | "migdal", string> = {
   phoenix: "",
   direct: "",
 };
-
-const countries = [
-  { value: "צרפת", flag: "fr" },
-  { value: "איטליה", flag: "it" },
-  { value: "ספרד", flag: "es" },
-  { value: "גרמניה", flag: "de" },
-  { value: "יוון", flag: "gr" },
-  { value: "פורטוגל", flag: "pt" },
-  { value: "בריטניה", flag: "gb" },
-  { value: "הולנד", flag: "nl" },
-  { value: "אוסטריה", flag: "at" },
-  { value: "שווייץ", flag: "ch" },
-  { value: "ארצות הברית", flag: "us" },
-  { value: "קנדה", flag: "ca" },
-  { value: "מקסיקו", flag: "mx" },
-  { value: "תאילנד", flag: "th" },
-  { value: "יפן", flag: "jp" },
-  { value: "סין", flag: "cn" },
-  { value: "דרום קוריאה", flag: "kr" },
-  { value: "אוסטרליה", flag: "au" },
-  { value: "ניו זילנד", flag: "nz" },
-  { value: "ברזיל", flag: "br" },
-  { value: "ארגנטינה", flag: "ar" },
-  { value: "צ׳ילה", flag: "cl" },
-  { value: "פרו", flag: "pe" },
-  { value: "דרום אפריקה", flag: "za" },
-  { value: "מצרים", flag: "eg" },
-  { value: "מרוקו", flag: "ma" },
-];
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -125,8 +101,9 @@ function CheckoutContent() {
     departure,
     returnDate,
     ages: passengerAges,
-    selectedAddons,
+    selectedAddons: addonsForInsurer(selectedAddons, companyId),
     baggagePassengerCount: baggagePassengers.length,
+    passengerSelections: parsePassengerSelections(searchParams),
     extremeSportsStart,
     extremeSportsEnd,
     removeThirdParty,
@@ -200,6 +177,7 @@ function CheckoutContent() {
         <div className="space-y-6">
           {/* Company */}
           <div className="rounded-2xl bg-white p-6 shadow-xl">
+            {missingCoverages(selectedAddons, companyId).length > 0 && <p role="alert" className="mb-4 rounded-lg bg-amber-50 p-3 font-bold text-amber-900">הצעה זו אינה כוללת: {missingCoverages(selectedAddons, companyId).map((id) => limitedCoverages[id].name).join(", ")}</p>}
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-sm text-gray-500">חברת הביטוח שנבחרה</p>
@@ -392,9 +370,9 @@ function CheckoutContent() {
           <div className="rounded-2xl bg-white p-6 shadow-md">
             <h2 className="text-xl font-bold text-gray-900">הרחבות שנבחרו</h2>
 
-            {selectedAddons.length > 0 ? (
+            {quoteInput.selectedAddons.length > 0 ? (
               <div className="mt-5 flex flex-wrap gap-3">
-                {selectedAddons.map((addon) => (
+                {quoteInput.selectedAddons.map((addon) => (
                   <div
                     key={addon}
                     className="rounded-full bg-green-100 px-4 py-2 text-sm font-bold text-green-700"

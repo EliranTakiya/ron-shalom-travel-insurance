@@ -1,41 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { countries } from "@/lib/countries";
 
 type SearchFormProps = {
   destination: string;
   setDestination: (value: string) => void;
   onContinue: () => void;
 };
-
-const countries = [
-  { value: "צרפת", label: "צרפת", flag: "fr" },
-  { value: "איטליה", label: "איטליה", flag: "it" },
-  { value: "ספרד", label: "ספרד", flag: "es" },
-  { value: "גרמניה", label: "גרמניה", flag: "de" },
-  { value: "יוון", label: "יוון", flag: "gr" },
-  { value: "פורטוגל", label: "פורטוגל", flag: "pt" },
-  { value: "בריטניה", label: "בריטניה", flag: "gb" },
-  { value: "הולנד", label: "הולנד", flag: "nl" },
-  { value: "אוסטריה", label: "אוסטריה", flag: "at" },
-  { value: "שווייץ", label: "שווייץ", flag: "ch" },
-  { value: "ארצות הברית", label: "ארצות הברית", flag: "us" },
-  { value: "קנדה", label: "קנדה", flag: "ca" },
-  { value: "מקסיקו", label: "מקסיקו", flag: "mx" },
-  { value: "תאילנד", label: "תאילנד", flag: "th" },
-  { value: "יפן", label: "יפן", flag: "jp" },
-  { value: "סין", label: "סין", flag: "cn" },
-  { value: "דרום קוריאה", label: "דרום קוריאה", flag: "kr" },
-  { value: "אוסטרליה", label: "אוסטרליה", flag: "au" },
-  { value: "ניו זילנד", label: "ניו זילנד", flag: "nz" },
-  { value: "ברזיל", label: "ברזיל", flag: "br" },
-  { value: "ארגנטינה", label: "ארגנטינה", flag: "ar" },
-  { value: "צ׳ילה", label: "צ׳ילה", flag: "cl" },
-  { value: "פרו", label: "פרו", flag: "pe" },
-  { value: "דרום אפריקה", label: "דרום אפריקה", flag: "za" },
-  { value: "מצרים", label: "מצרים", flag: "eg" },
-  { value: "מרוקו", label: "מרוקו", flag: "ma" },
-];
 
 const popularCountries = [
   "יוון",
@@ -46,10 +18,6 @@ const popularCountries = [
   "בריטניה",
   "תאילנד",
   "קפריסין",
-];
-
-const extraCountries = [
-  { value: "קפריסין", label: "קפריסין", flag: "cy" },
 ];
 
 export default function SearchForm({
@@ -67,7 +35,7 @@ export default function SearchForm({
         .filter(Boolean)
     : [];
 
-  const allCountries = [...countries, ...extraCountries];
+  const allCountries = countries;
 
   const toggleCountry = (countryValue: string) => {
     if (selectedCountries.includes(countryValue)) {

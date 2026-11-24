@@ -1,4 +1,5 @@
 import priceLists from "@/data/price-lists.json";
+import { coveredAges, type PassengerSelections } from "@/lib/coverage-selection";
 // https://shukabit.co.il/migdal-lowcost/prices
 type DailyRate = {
   ageFrom: number;
@@ -48,6 +49,7 @@ type MigdalQuoteInput = {
   ages: number[];
   selectedAddons: string[];
   baggagePassengerCount: number;
+  passengerSelections?: PassengerSelections;
   extremeSportsStart?: string;
   extremeSportsEnd?: string;
   removeThirdParty?: boolean;
@@ -319,8 +321,9 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
     const addon = tariff.addOns.find((item) => item.id === addonId);
     if (!addon) continue;
 
+    const addonAges = coveredAges(ages, selectedAddon, input.passengerSelections, input.baggagePassengerCount);
     if (addon.dailyRatesByAge) {
-      const addonRates = ages.map((age) =>
+      const addonRates = addonAges.map((age) =>
         addon.dailyRatesByAge?.find((rate) => ageMatches(age, rate)),
       );
       if (addonRates.some((rate) => !rate)) {
@@ -353,10 +356,7 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
         amount: addonPremiumCents / 100,
       });
     } else if (addon.dailyPrice !== undefined) {
-      const coveredCount =
-        selectedAddon === "baggage"
-          ? input.baggagePassengerCount || ages.length
-          : ages.length;
+      const coveredCount = addonAges.length;
       const addonDurationDays = selectedAddon === "extremeSports" ? extremeSportsDays ?? durationDays : durationDays;
       const premium = toCents(addon.dailyPrice) * addonDurationDays * coveredCount;
       const maximum =
