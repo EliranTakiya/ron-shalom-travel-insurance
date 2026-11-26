@@ -8,6 +8,8 @@ import { countries } from "@/lib/countries";
 import { calculateDirectInsuranceQuote } from "@/lib/direct-insurance-pricing";
 import { calculateInsurerQuote, type InsurerId } from "@/lib/insurer-pricing";
 import { calculateMigdalQuote } from "@/lib/migdal-pricing";
+import { calculateClubBenefits, type ClubInsurerId } from "@/lib/club-benefits";
+import ClubBenefitsDetails, { clubs, readClub } from "@/components/ClubBenefits";
 
 const addonNames: Record<string, string> = {
   phone: "טלפון נייד",
@@ -39,6 +41,7 @@ const insurerLinks: Record<InsurerId | "migdal", string> = {
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
+  const { club, flags } = readClub(searchParams);
 
   const companyId = searchParams.get("companyId") || "migdal";
   const company = searchParams.get("company") || "לא נבחרה חברה";
@@ -116,12 +119,14 @@ function CheckoutContent() {
     "clal",
     "phoenix",
   ];
-  const quote =
+  const originalQuote =
     companyId === "direct"
       ? calculateDirectInsuranceQuote(quoteInput)
       : supportedInsurers.includes(companyId as InsurerId)
         ? calculateInsurerQuote(companyId as InsurerId, quoteInput)
         : calculateMigdalQuote(quoteInput);
+  const validCompanyId: ClubInsurerId = companyId === "migdal" || companyId === "direct" || supportedInsurers.includes(companyId as InsurerId) ? companyId as ClubInsurerId : "migdal";
+  const quote = calculateClubBenefits(validCompanyId, originalQuote, quoteInput, club, flags);
 
   // תמיכה במספר יעדים
   const selectedCountries = destination
@@ -226,6 +231,7 @@ function CheckoutContent() {
                     {warning}
                   </p>
                 ))}
+                <ClubBenefitsDetails benefits={quote.benefits} passengerCount={passengerAges.length} />
                 {"sourceNote" in quote &&
                   typeof quote.sourceNote === "string" && (
                     <p className="mt-2 text-xs text-gray-500">
@@ -239,6 +245,7 @@ function CheckoutContent() {
           {/* Trip details */}
           <div className="rounded-2xl bg-white p-6 shadow-md">
             <h2 className="text-xl font-bold text-gray-900">פרטי הנסיעה</h2>
+            {club && <p className="mt-3 text-sm font-bold text-gray-700">מועדון: {clubs.find((item) => item.id === club)?.name}</p>}
 
             <div className="mt-5 grid gap-5 md:grid-cols-2">
               {/* Destination */}
@@ -384,6 +391,9 @@ function CheckoutContent() {
             ) : (
               <p className="mt-4 text-gray-500">לא נבחרו הרחבות</p>
             )}
+            {selectedAddons.includes("extremeSports") && <p className="mt-3 text-sm text-gray-700">ספורט אתגרי: {formatDate(extremeSportsStart)} - {formatDate(extremeSportsEnd)}</p>}
+            {(removeThirdParty || removeRescue) && <p className="mt-3 text-sm text-amber-900">הוסר מהבקשה: {[removeThirdParty && "צד ג׳", removeRescue && "איתור וחילוץ"].filter(Boolean).join(", ")}</p>}
+            {(["baggage", "phone", "laptop"] as const).filter((id) => selectedAddons.includes(id) && quoteInput.passengerSelections[id]?.length).map((id) => <p key={id} className="mt-2 text-sm text-gray-700">{addonNames[id]}: נוסעים {(quoteInput.passengerSelections[id] ?? []).map((index) => index + 1).join(", ")} לפי סדר הנוסעים המוצג</p>)}
           </div>
 
           {/* Continue */}
@@ -393,13 +403,14 @@ function CheckoutContent() {
               onClick={() => {
                 if (offerUrl) window.location.assign(offerUrl);
               }}
-              className="w-full rounded-xl bg-green-500 py-4 text-lg font-bold text-white transition hover:bg-green-600"
+              disabled={!offerUrl || quote.price === null}
+              className="w-full rounded-xl bg-green-500 py-4 text-lg font-bold text-white transition hover:bg-green-600 disabled:bg-gray-300"
             >
-              המשך להצעה
+              {offerUrl ? "מעבר לאתר חברת הביטוח" : "אין קישור זמין לחברת הביטוח"}
             </button>
 
             <p className="mt-3 text-center text-xs text-gray-500">
-              המחיר המוצג הוא מחיר משוער ועשוי להשתנות בהתאם לפרטי הביטוח.
+              פרטי הנסיעה והטבות המועדון אינם מועברים לאתר החברה. יש להזין אותם מחדש ולוודא זכאות, כיסויים ומחיר סופי מול החברה לפני רכישה.
             </p>
           </div>
         </div>

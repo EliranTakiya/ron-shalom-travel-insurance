@@ -2,19 +2,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import SearchForm from "@/components/SearchForm";
 import PassengerForm from "@/components/PassengerForm";
 import AddonsForm from "@/components/AddonsForm";
+import ClubSelection from "@/components/ClubSelection";
 import type { PassengerSelections } from "@/lib/coverage-selection";
 // import AccessibilityButton from "@/components/AccessibilityButton";
 
 export default function Home() {
-  const router = useRouter();
-
   const [destination, setDestination] = useState("");
   const [departure, setDeparture] = useState("");
   const [returnDate, setReturnDate] = useState("");
+  const [extremeSportsStart, setExtremeSportsStart] = useState("");
+  const [extremeSportsEnd, setExtremeSportsEnd] = useState("");
 
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
@@ -28,7 +28,7 @@ export default function Home() {
   const [passengerSelections, setPassengerSelections] = useState<PassengerSelections>({});
   const [removeThirdParty, setRemoveThirdParty] = useState(false);
   const [removeRescue, setRemoveRescue] = useState(false);
-  const [club, setClub] = useState("");
+  const [clubTripParams, setClubTripParams] = useState("");
 
   const [activeTab, setActiveTab] = useState(0);
   const [destinationOpened, setDestinationOpened] = useState(false);
@@ -68,6 +68,9 @@ export default function Home() {
       if (typeof data.returnDate === "string") {
         setReturnDate(data.returnDate);
       }
+
+      setExtremeSportsStart(typeof data.extremeSportsStart === "string" ? data.extremeSportsStart : data.departure ?? "");
+      setExtremeSportsEnd(typeof data.extremeSportsEnd === "string" ? data.extremeSportsEnd : data.returnDate ?? "");
 
       if (typeof data.adults === "number") {
         setAdults(data.adults);
@@ -109,9 +112,6 @@ export default function Home() {
         setRemoveRescue(data.removeRescue);
       }
 
-      if (typeof data.club === "string") {
-        setClub(data.club);
-      }
     } catch (error) {
       console.error("Failed to restore trip data:", error);
     } finally {
@@ -126,6 +126,8 @@ export default function Home() {
         destination,
         departure,
         returnDate,
+        extremeSportsStart,
+        extremeSportsEnd,
         adults,
         children,
         babies,
@@ -136,7 +138,6 @@ export default function Home() {
         passengerSelections,
         removeThirdParty,
         removeRescue,
-        club,
       };
 
       sessionStorage.setItem(
@@ -151,6 +152,8 @@ export default function Home() {
     destination,
     departure,
     returnDate,
+    extremeSportsStart,
+    extremeSportsEnd,
     adults,
     children,
     babies,
@@ -161,7 +164,6 @@ export default function Home() {
     passengerSelections,
     removeThirdParty,
     removeRescue,
-    club,
   ]);
 
   // גלילה אוטומטית לכפתור "המשך לנוסעים"
@@ -195,6 +197,8 @@ export default function Home() {
     setDestination("");
     setDeparture("");
     setReturnDate("");
+    setExtremeSportsStart("");
+    setExtremeSportsEnd("");
 
     setAdults(1);
     setChildren(0);
@@ -208,7 +212,7 @@ export default function Home() {
     setPassengerSelections({});
     setRemoveThirdParty(false);
     setRemoveRescue(false);
-    setClub("");
+    setClubTripParams("");
 
     setActiveTab(1);
     setDestinationOpened(true);
@@ -246,19 +250,18 @@ export default function Home() {
     babyAges.every((age) => age !== null);
 
   const addonsDone = addons.length > 0;
-  const clubDone = club !== "";
 
   const isDone = (id: number) => {
     if (id === 1) return destinationDone;
     if (id === 2) return datesDone;
     if (id === 3) return passengersDone;
     if (id === 4) return addonsDone;
-    if (id === 5) return clubDone;
 
     return false;
   };
 
   const handleTabClick = (id: number) => {
+    if (id !== 5) setClubTripParams("");
     setActiveTab(id);
 
     if (id === 1) {
@@ -1085,13 +1088,18 @@ export default function Home() {
                   destination={destination}
                   departure={departure}
                   returnDate={returnDate}
+                  extremeSportsStart={extremeSportsStart}
+                  setExtremeSportsStart={setExtremeSportsStart}
+                  extremeSportsEnd={extremeSportsEnd}
+                  setExtremeSportsEnd={setExtremeSportsEnd}
                   adults={adults}
                   children={children}
                   babies={babies}
                   adultAges={adultAges}
                   childAges={childAges}
                   babyAges={babyAges}
-                  onClubMember={() => {
+                  onClubMember={(params) => {
+                    setClubTripParams(params.toString());
                     setActiveTab(5);
 
                     setTimeout(() => {
@@ -1107,191 +1115,7 @@ export default function Home() {
 
             {/* כרטיסי מועדון */}
 
-            {activeTab === 5 && (
-              <div id="club-member" className="scroll-mt-24">
-
-                <h3 className="text-xl font-bold text-gray-900">
-                  כרטיסי מועדון
-                </h3>
-
-                <p className="mt-2 text-gray-500">
-                  יש לכם כרטיס מועדון? ייתכן שמגיעה לכם הנחה
-                </p>
-
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-
-                  <button
-                    type="button"
-                    onClick={() => setClub("none")}
-                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${club === "none"
-                        ? "border-green-500 bg-green-50 text-green-700"
-                        : "border-gray-200 hover:border-blue-400"
-                      }`}
-                  >
-
-                    <div className="flex items-center justify-between">
-
-                      <span>
-                        אין לי כרטיס מועדון
-                      </span>
-
-                      {club === "none" && (
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-sm text-white">
-                          ✓
-                        </span>
-                      )}
-
-                    </div>
-
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (club === "has-club") {
-                        setClub("");
-                      } else {
-                        setClub("has-club");
-                      }
-                    }}
-                    className={`rounded-xl border-2 p-4 text-right font-bold transition ${club !== "" && club !== "none"
-                        ? "border-green-500 bg-green-50 text-green-700"
-                        : "border-gray-200 hover:border-blue-400"
-                      }`}
-                  >
-
-                    <div className="flex items-center justify-between">
-
-                      <span>
-                        יש לי כרטיס מועדון
-                      </span>
-
-                      {club !== "" && club !== "none" && (
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-sm text-white">
-                          ✓
-                        </span>
-                      )}
-
-                    </div>
-
-                  </button>
-
-                </div>
-
-                {(
-                  club === "has-club" ||
-                  [
-                    "ישראכרט",
-                    "פיס פלוס",
-                    "חבר",
-                    "ביחד בשבילך",
-                    "ארגון המורים",
-                    "משרד הביטחון",
-                    "ההסתדרות",
-                  ].includes(club)
-                ) && (
-                    <div className="mt-5">
-
-                      <label className="mb-2 block font-medium text-gray-700">
-                        בחרו את כרטיס המועדון
-                      </label>
-
-                      <select
-                        value={
-                          [
-                            "ישראכרט",
-                            "פיס פלוס",
-                            "חבר",
-                            "ביחד בשבילך",
-                            "ארגון המורים",
-                            "משרד הביטחון",
-                            "ההסתדרות",
-                          ].includes(club)
-                            ? club
-                            : ""
-                        }
-                        onChange={(e) => setClub(e.target.value)}
-                        className="w-full rounded-xl border border-gray-300 bg-white p-4 font-medium outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                      >
-
-                        <option value="">
-                          בחרו כרטיס מועדון...
-                        </option>
-
-                        <option value="ישראכרט">
-                          ישראכרט
-                        </option>
-
-                        <option value="פיס פלוס">
-                          פיס פלוס
-                        </option>
-
-                        <option value="חבר">
-                          חבר
-                        </option>
-
-                        <option value="ביחד בשבילך">
-                          ביחד בשבילך
-                        </option>
-
-                        <option value="ארגון המורים">
-                          ארגון המורים
-                        </option>
-
-                        <option value="משרד הביטחון">
-                          משרד הביטחון
-                        </option>
-
-                        <option value="ההסתדרות">
-                          ההסתדרות
-                        </option>
-
-                      </select>
-
-                    </div>
-                  )}
-
-                {club !== "" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-
-                      const params = new URLSearchParams({
-                        destination,
-                        departure,
-                        returnDate,
-
-                        adults: adults.toString(),
-                        children: children.toString(),
-                        babies: babies.toString(),
-
-                        adultAges: adultAges
-                          .map((age) => age?.toString() ?? "")
-                          .join(","),
-
-                        childAges: childAges
-                          .map((age) => age?.toString() ?? "")
-                          .join(","),
-
-                        babyAges: babyAges
-                          .map((age) => age?.toString() ?? "")
-                          .join(","),
-
-                        addons: addons.join(","),
-                      });
-
-                      router.push(
-                        `/results/?${params.toString()}`
-                      );
-                    }}
-                    className="mt-6 w-full rounded-xl bg-green-600 py-4 text-lg font-bold text-white hover:bg-green-700"
-                  >
-                    הצג הצעות ביטוח
-                  </button>
-                )}
-
-              </div>
-            )}
+            {activeTab === 5 && <ClubSelection tripParams={clubTripParams} onBack={() => { setClubTripParams(""); setActiveTab(4); }} />}
 
           </div>
         </div>

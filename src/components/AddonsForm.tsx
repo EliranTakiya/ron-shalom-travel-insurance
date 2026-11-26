@@ -17,13 +17,17 @@ type AddonsFormProps = {
   destination: string;
   departure: string;
   returnDate: string;
+  extremeSportsStart: string;
+  setExtremeSportsStart: (value: string) => void;
+  extremeSportsEnd: string;
+  setExtremeSportsEnd: (value: string) => void;
   adults: number;
   children: number;
   babies: number;
   adultAges: (number | null)[];
   childAges: (number | null)[];
   babyAges: (number | null)[];
-  onClubMember: () => void;
+  onClubMember: (params: URLSearchParams) => void;
 };
 
 const addonOptions = [
@@ -126,6 +130,10 @@ export default function AddonsForm({
   destination,
   departure,
   returnDate,
+  extremeSportsStart,
+  setExtremeSportsStart,
+  extremeSportsEnd,
+  setExtremeSportsEnd,
   adults,
   children,
   babies,
@@ -145,8 +153,6 @@ export default function AddonsForm({
   const passengerSelections: PassengerSelections = adults + children + babies === 1
     ? Object.fromEntries(passengerAddonIds.filter((id) => addons.includes(id)).map((id) => [id, [0]]))
     : savedPassengerSelections;
-  const [extremeSportsStart, setExtremeSportsStart] = useState(departure);
-  const [extremeSportsEnd, setExtremeSportsEnd] = useState(returnDate);
   const [sportsCalendarMonth, setSportsCalendarMonth] = useState(() => new Date());
   const [sportsRangeStep, setSportsRangeStep] = useState<"start" | "end">("start");
 
@@ -203,8 +209,6 @@ export default function AddonsForm({
   const [baggagePassengers, setBaggagePassengers] = useState<string[]>([]);
 
   useEffect(() => {
-    setExtremeSportsStart(departure);
-    setExtremeSportsEnd(returnDate);
     const tripStart = departure ? new Date(`${departure}T00:00:00`) : new Date();
     setSportsCalendarMonth(new Date(tripStart.getFullYear(), tripStart.getMonth(), 1));
   }, [departure, returnDate]);
@@ -327,16 +331,7 @@ export default function AddonsForm({
     });
   };
 
-  const goToResults = () => {
-    if (!canCompare) return;
-
-    const missingPassengerAddon = passengerAddonIds.find((id) => addons.includes(id) && !passengerSelections[id]?.length);
-    if (missingPassengerAddon) {
-      setPassengerDialog(missingPassengerAddon);
-      return;
-    }
-
-    const params = new URLSearchParams({
+  const buildResultsParams = () => new URLSearchParams({
       destination,
       departure,
       returnDate,
@@ -368,9 +363,6 @@ export default function AddonsForm({
       ...Object.fromEntries(passengerAddonIds.map((id) => [`${id}PassengerIndexes`, (passengerSelections[id] ?? []).join(",")])),
     });
 
-    router.push(`/results/?${params.toString()}`);
-  };
-
   const handleCompare = () => {
     if (!canCompare) return;
 
@@ -385,12 +377,12 @@ export default function AddonsForm({
 
   const handleClubYes = () => {
     setShowClubQuestion(false);
-    onClubMember();
+    onClubMember(buildResultsParams());
   };
 
   const handleClubNo = () => {
     setShowClubQuestion(false);
-    goToResults();
+    router.push(`/results/?${buildResultsParams().toString()}`);
   };
 
   const passengerOptions = getPassengerOptions();

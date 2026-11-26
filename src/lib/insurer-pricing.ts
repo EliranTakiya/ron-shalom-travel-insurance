@@ -7,6 +7,7 @@ export type InsurerQuoteInput = {
   departure: string;
   returnDate: string;
   ages: number[];
+  planSelectionAges?: number[];
   selectedAddons: string[];
   baggagePassengerCount: number;
   passengerSelections?: PassengerSelections;

@@ -47,6 +47,7 @@ type MigdalQuoteInput = {
   departure: string;
   returnDate: string;
   ages: number[];
+  planSelectionAges?: number[];
   selectedAddons: string[];
   baggagePassengerCount: number;
   passengerSelections?: PassengerSelections;
@@ -180,7 +181,7 @@ export function calculateMigdalQuote(input: MigdalQuoteInput): MigdalQuote {
   const includesUs = input.destination
     .split(",")
     .some((country) => country.trim() === "ארצות הברית");
-  const lowcostSupportsAllAges = ages.every((age) => age <= 60);
+  const lowcostSupportsAllAges = (input.planSelectionAges ?? ages).every((age) => age <= 60);
   const useLowcost = durationDays <= 14 && lowcostSupportsAllAges;
   const planId = useLowcost
     ? includesUs

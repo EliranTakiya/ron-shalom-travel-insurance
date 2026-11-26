@@ -2,7 +2,9 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Fragment, Suspense, useEffect, useState } from "react";
-import { addonsForInsurer, limitedCoverages, missingCoverages, parsePassengerSelections, passengerAddonIds } from "@/lib/coverage-selection";
+import { addonsForInsurer, limitedCoverages, missingCoverages, parsePassengerSelections } from "@/lib/coverage-selection";
+import ClubBenefitsDetails, { clubs, readClub } from "@/components/ClubBenefits";
+import { calculateClubBenefits, type ClubBenefits } from "@/lib/club-benefits";
 import { countries } from "@/lib/countries";
 import { calculateDirectInsuranceQuote } from "@/lib/direct-insurance-pricing";
 import {
@@ -12,7 +14,7 @@ import {
 } from "@/lib/insurer-pricing";
 import { calculateMigdalQuote } from "@/lib/migdal-pricing";
 
-type Quote = ReturnType<typeof calculateMigdalQuote> | InsurerQuote;
+type Quote = (ReturnType<typeof calculateMigdalQuote> | InsurerQuote) & { benefits?: ClubBenefits };
 
 type InsuranceCompany = {
   id: string;
@@ -82,6 +84,7 @@ const addonNames: Record<string, string> = {
 function ResultsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { club, flags } = readClub(searchParams);
 
   const destination = searchParams.get("destination") || "";
   const departure = searchParams.get("departure") || "";
@@ -141,7 +144,8 @@ function ResultsContent() {
     removeThirdParty,
     removeRescue,
   };
-  const migdalQuote = calculateMigdalQuote({ ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, "migdal") });
+  const migdalInput = { ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, "migdal") };
+  const migdalQuote = calculateClubBenefits("migdal", calculateMigdalQuote(migdalInput), migdalInput, club, flags);
   const insurerIds: InsurerId[] = [
     "harel",
     "menora",
@@ -151,9 +155,15 @@ function ResultsContent() {
   ];
   const quotesById: Record<string, Quote> = {
     migdal: migdalQuote,
-    direct: calculateDirectInsuranceQuote({ ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, "direct") }),
+    direct: (() => {
+      const input = { ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, "direct") };
+      return calculateClubBenefits("direct", calculateDirectInsuranceQuote(input), input, club, flags);
+    })(),
     ...Object.fromEntries(
-      insurerIds.map((id) => [id, calculateInsurerQuote(id, { ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, id) })]),
+      insurerIds.map((id) => {
+        const input = { ...quoteInput, selectedAddons: addonsForInsurer(selectedAddons, id) };
+        return [id, calculateClubBenefits(id, calculateInsurerQuote(id, input), input, club, flags)];
+      }),
     ),
   };
   const companyConfigs = [
@@ -177,7 +187,7 @@ function ResultsContent() {
         price: companyQuote.price,
         quote: companyQuote,
         color,
-        recommended: false,
+        recommended: id === "passportcard",
         includedAddons: addonsForInsurer(selectedAddons, id),
         missingAddons: missingCoverages(selectedAddons, id),
         details: {
@@ -190,6 +200,7 @@ function ResultsContent() {
       }];
     },
   ).sort((first, second) => Number(first.missingAddons.length > 0) - Number(second.missingAddons.length > 0));
+  const lowestPrice = Math.min(...insuranceCompanies.map((company) => company.price));
   const missingCoverageNames = [...new Set(insuranceCompanies.flatMap((company) => company.missingAddons))]
     .map((id) => limitedCoverages[id].name);
   const unavailableQuotes = companyConfigs.flatMap(({ id, name }) => {
@@ -244,34 +255,10 @@ function ResultsContent() {
   };
 
   const buildCheckoutParams = (company: InsuranceCompany) => {
-    return new URLSearchParams({
-      companyId: company.id,
-      company: company.name,
-      price: company.price.toString(),
-      currency: "USD",
-
-      destination,
-      departure,
-      returnDate,
-
-      adults: adults.toString(),
-      children: children.toString(),
-      babies: babies.toString(),
-
-      adultAges: adultAges.join(","),
-      childAges: childAges.join(","),
-      babyAges: babyAges.join(","),
-
-      addons: selectedAddons.join(","),
-      extremeSportsStart,
-      extremeSportsEnd,
-      removeThirdParty: removeThirdParty.toString(),
-      removeRescue: removeRescue.toString(),
-
-      // מעביר את כל המבוטחים לכבודה
-      baggagePassengers: baggagePassengers.join("|"),
-      ...Object.fromEntries(passengerAddonIds.map((id) => [`${id}PassengerIndexes`, searchParams.get(`${id}PassengerIndexes`) ?? ""])),
-    });
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("companyId", company.id);
+    params.set("company", company.name);
+    return params;
   };
 
   return (
@@ -292,6 +279,7 @@ function ResultsContent() {
           <p className="mt-2 text-blue-100">
             מצאנו אפשרויות שמתאימות לנתוני הנסיעה שלך
           </p>
+          {club && <p className="mt-2 text-sm">מועדון: {clubs.find((item) => item.id === club)?.name}. הזכאות והמחיר כפופים לאימות מול חברת הביטוח.</p>}
         </div>
       </section>
 
@@ -463,10 +451,10 @@ function ResultsContent() {
               className="relative rounded-2xl bg-white p-6 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
             >
               {company.missingAddons.length > 0 && <p className="mb-4 rounded-lg bg-amber-50 p-3 text-sm font-bold text-amber-900">ללא כיסוי: {company.missingAddons.map((id) => limitedCoverages[id].name).join(", ")}</p>}
-              {/* Recommended */}
-              {company.recommended && (
-                <div className="absolute -top-3 right-5 rounded-full bg-yellow-400 px-4 py-1 text-sm font-bold text-yellow-900">
-                  ⭐ מומלץ
+              {(company.recommended || company.price === lowestPrice) && (
+                <div className="mb-4 flex flex-wrap gap-2 text-sm font-bold">
+                  {company.recommended && <span className="rounded bg-yellow-100 px-2 py-1 text-yellow-900">מומלץ</span>}
+                  {company.price === lowestPrice && <span className="rounded bg-green-100 px-2 py-1 text-green-900">המחיר הנמוך ביותר</span>}
                 </div>
               )}
 
@@ -510,6 +498,7 @@ function ResultsContent() {
                 {company.quote.warnings.map((warning) => (
                   <p key={warning} className="mt-2 text-xs text-amber-700">{warning}</p>
                 ))}
+                <ClubBenefitsDetails benefits={company.quote.benefits} passengerCount={totalPassengers} />
               </div>
 
               {/* Coverage */}
@@ -571,7 +560,7 @@ function ResultsContent() {
                   }}
                   className="flex-1 rounded-lg bg-orange-500 py-3 font-bold text-white hover:bg-orange-600"
                 >
-                  לרכישה
+                  להמשך ובדיקת ההצעה
                 </button>
               </div>
             </div>
@@ -668,7 +657,7 @@ function ResultsContent() {
                 </div>
               </div>
 
-              <div className="rounded-xl bg-gray-50 p-4">
+              {selectedCompany.includedAddons.includes("baggage") && <div className="rounded-xl bg-gray-50 p-4">
                 <div className="font-bold text-gray-900">🧳 כבודה</div>
 
                 <div className="mt-1 text-sm text-gray-600">
@@ -684,7 +673,7 @@ function ResultsContent() {
                       </div>
                     </div>
                   )}
-              </div>
+              </div>}
 
               {selectedAddons.includes("phone") && (
                 <div className="rounded-xl bg-gray-50 p-4">
