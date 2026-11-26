@@ -131,7 +131,7 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
   if (clubId === "teachers")
     note(
       "conditional",
-      "Teachers additional-traveler benefit: the card holder and all eligible additional travelers must be family. The first adult is the card holder; up to two other adults and all children under 18 are eligible.",
+      "Teachers additional-traveler benefit: the card holder and all eligible additional travelers must be family. The first adult is the card holder; up to one other adult and all children under 18 are eligible.",
     );
   if (
     original.price === null ||
@@ -290,6 +290,10 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
       );
       return;
     }
+    if (insurerId === "harel") {
+      note("applied", "Harel third-party coverage is included at no additional cost.");
+      return;
+    }
     if (insurerId === "migdal") {
       const without = quoteFor(insurerId, { ...input, removeThirdParty: true });
       if (
@@ -392,11 +396,9 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
     case "hever":
       gift("operational-cancellation", "ביטול עקב פעילות מבצעית במתנה", undefined, null, null);
       free(["operationalCancellation"], "Selected operational cancellation premium is free.");
-      note("unimplemented", "Cancellation gift coverage dates and expiry require confirmation with the insurer.");
+      note("conditional", "Cancellation gift coverage dates and expiry require confirmation with the insurer.");
       if (insurerId === "phoenix") {
-        free(["baggage"], "Selected baggage premium is free.");
-        if (indexes(["cancellation"]).some((index) => lines[index].amount > 0))
-          note("unimplemented", "The medical-only gift cannot be separated from the selected broader cancellation premium; that premium remains payable.");
+        free(["baggage", "cancellation"], "Selected Phoenix cancellation and baggage premiums are free.");
         gift("baggage", "כיסוי כבודה במתנה לכל הנוסעים");
         gift("medical-cancellation", "ביטול וקיצור נסיעה מסיבות רפואיות במתנה", undefined, null, null);
       }
@@ -408,7 +410,10 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
       else if (insurerId === "menora")
         percent(paidIndexes(), 22, "22% off the total.");
       else if (insurerId === "harel") {
-        freeRescue();
+        if (input.removeRescue)
+          gift("rescue", "איתור וחילוץ במתנה לכל הנוסעים");
+        else
+          freeRescue();
         percent(
           paidIndexes(),
           15,
@@ -425,7 +430,10 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
       } else if (insurerId === "migdal") {
         free(["baggage"], "Selected baggage premium is free.");
         gift("baggage", "כיסוי כבודה במתנה לכל הנוסעים");
-        freeRescue();
+        if (input.removeRescue)
+          gift("rescue", "איתור וחילוץ במתנה לכל הנוסעים");
+        else
+          freeRescue();
         if (duration > 14)
           percent(
             indexes(["base"]),
@@ -436,7 +444,12 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
         note("not_applicable", "No HOT benefit is specified for this insurer.");
       break;
     case "doctors":
-      if (insurerId === "harel") freeRescue();
+      if (insurerId === "harel") {
+        if (input.removeRescue)
+          gift("rescue", "איתור וחילוץ במתנה לכל הנוסעים");
+        else
+          freeRescue();
+      }
       if (insurerId === "harel" || insurerId === "clal")
         percent(
           paidIndexes(),
@@ -465,7 +478,10 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
         );
       break;
     case "teachers": {
-      freeThirdParty();
+      if (input.removeThirdParty)
+        gift("third-party", "כיסוי צד ג׳ במתנה לכל הנוסעים");
+      else
+        freeThirdParty();
       gift("baggage", "כיסוי כבודה במתנה", undefined, input.departure, firstDaysEnd(8));
       if (duration > 8)
         note("conditional", "Baggage after the free days is included only for passengers who selected it; other passengers have no quoted baggage after day 8.");
@@ -581,7 +597,7 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
           if (index === holder) return false;
           if (age < 18) return true;
           additionalAdults++;
-          return additionalAdults <= 2;
+          return additionalAdults <= 1;
         });
         if (eligiblePassengers.some(Boolean)) {
           const passengerQuotes = input.ages.map((age, index) => {
@@ -751,8 +767,8 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
           baggageIndexes.includes(index) ? [index] : [],
         );
         for (const [id, name] of [
-          ["phone", "כיסוי טלפון במתנה"],
-          ["laptop", "כיסוי מחשב נייד במתנה"],
+          ["phone", "כיסוי לאובדן או גניבת טלפון נייד במתנה"],
+          ["laptop", "כיסוי לאובדן או גניבת מחשב נייד במתנה"],
           ["extreme-sports", "כיסוי ספורט אתגרי במתנה"],
         ] as const)
           gift(id, name, eligibleBaggageIndexes);
@@ -821,7 +837,11 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
         );
         break;
       }
-      const rescueDiscounted = freeRescue();
+      let rescueDiscounted = false;
+      if (input.removeRescue)
+        gift("rescue", "איתור וחילוץ במתנה לכל הנוסעים");
+      else
+        rescueDiscounted = freeRescue();
       if (flags.calConfirmed) {
         dayBenefits(5, 0, "Hitechzone", rescueDiscounted, false);
       } else
@@ -829,7 +849,10 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
           "conditional",
           "Five free base days require confirmation of the cal card.",
         );
-      freeThirdParty();
+      if (input.removeThirdParty)
+        gift("third-party", "כיסוי צד ג׳ במתנה לכל הנוסעים");
+      else
+        freeThirdParty();
       percent(
         indexes(["extremeSports"]),
         50,
@@ -839,10 +862,48 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
     }
     case "diners_cal":
       if (insurerId === "harel") {
-        gift("baggage", "כיסוי כבודה במתנה", undefined, input.departure, firstDaysEnd(5));
+        const adultIndex = input.ages.findIndex((age) => age >= 18);
+        const childIndex = input.ages.findIndex((age) => age < 18);
+        if (adultIndex < 0) {
+          note("not_applicable", "Diners/cal requires at least one adult.");
+          break;
+        }
+        const eligible = childIndex < 0 ? [adultIndex] : [adultIndex, childIndex];
+        note("conditional", childIndex < 0
+          ? `Diners/cal applies to the first adult only: passenger ${adultIndex + 1}.`
+          : `Diners/cal applies to the first adult and first child only: passengers ${adultIndex + 1} and ${childIndex + 1}.`);
+        gift("baggage", "כיסוי כבודה במתנה", eligible, input.departure, firstDaysEnd(5));
         if (duration > 5)
           note("conditional", "Baggage after the free days is included only for passengers who selected it; other passengers have no quoted baggage after day 5.");
-        dayBenefits(5, 5, "Diners/cal");
+        const prefixBase = (days: number) => {
+          const date = new Date(`${input.departure}T00:00:00Z`);
+          date.setUTCDate(date.getUTCDate() + days - 1);
+          return quoteFor("harel", {
+            ...input,
+            ages: eligible.map((index) => input.ages[index]),
+            returnDate: date.toISOString().slice(0, 10),
+            selectedAddons: [],
+          });
+        };
+        const freeDays = Math.min(duration, 5);
+        const discountedDays = Math.min(duration, 10);
+        const freeBase = prefixBase(freeDays);
+        const throughBase = prefixBase(discountedDays);
+        if (freeBase.basePremium === undefined || throughBase.basePremium === undefined || freeBase.error || throughBase.error) {
+          note("unimplemented", "Diners/cal: the eligible passengers' base premium could not be calculated.");
+          break;
+        }
+        apply(indexes(["base"]), cents(freeBase.basePremium), `Diners/cal: base days 1-${freeDays} free for eligible passengers.`);
+        if (discountedDays > freeDays)
+          apply(indexes(["base"]), Math.round((cents(throughBase.basePremium) - cents(freeBase.basePremium)) * 0.1), `Diners/cal: 10% off base days ${freeDays + 1}-${discountedDays}.`);
+        if (input.selectedAddons.includes("baggage")) {
+          const selected = input.passengerSelections?.baggage ?? (input.baggagePassengerCount ? input.ages.map((_, index) => index).slice(0, input.baggagePassengerCount) : input.ages.map((_, index) => index));
+          const coveredCount = eligible.filter((index) => selected.includes(index)).length;
+          const daily = 39 * coveredCount;
+          apply(indexes(["baggage"]), daily * freeDays, `Diners/cal: selected baggage days 1-${freeDays} free.`);
+          if (discountedDays > freeDays)
+            apply(indexes(["baggage"]), Math.round(daily * (discountedDays - freeDays) * 0.1), `Diners/cal: 10% off selected baggage days ${freeDays + 1}-${discountedDays}.`);
+        }
       } else
         note(
           "not_applicable",
@@ -855,12 +916,14 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
           "not_applicable",
           "No El Al benefit is specified for this insurer.",
         );
-      else if (flags.elalEligible === true)
+      else if (flags.elalEligible === true) {
         apply(
           paidIndexes(),
           1000,
           "$10 El Al discount, capped at the quote price.",
         );
+        note("conditional", "The El Al discount requires a flight ticket purchased from El Al.");
+      }
       else if (flags.elalEligible === false)
         note("not_applicable", "El Al eligibility was not met.");
       else

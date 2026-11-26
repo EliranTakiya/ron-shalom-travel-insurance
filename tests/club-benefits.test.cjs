@@ -81,12 +81,12 @@ test("no club leaves the exact original object untouched", () => {
   );
 });
 
-test("teachers and Diners gifts cover all passengers only during free days", () => {
+test("teachers and Diners gifts cover eligible passengers during free days", () => {
   const data = input({ ages: [30, 40, 10], selectedAddons: [], baggagePassengerCount: 0 });
   for (const [club, endDate] of [["teachers", "2026-01-08"], ["diners_cal", "2026-01-05"]]) {
     const result = calculateClubBenefits("harel", quote("harel", data), data, club);
     const gift = result.benefits.gifts.find((item) => item.id === "baggage");
-    assert.deepEqual(gift.passengerIndexes, [0, 1, 2]);
+    assert.deepEqual(gift.passengerIndexes, club === "teachers" ? [0, 1, 2] : [0, 2]);
     assert.equal(gift.startDate, "2026-01-01");
     assert.equal(gift.endDate, endDate);
     consistent(result);
@@ -98,7 +98,22 @@ test("uniq gifts are assigned only to baggage purchasers", () => {
   const result = calculateClubBenefits("migdal", quote("migdal", data), data, "uniq");
   assert.deepEqual(result.benefits.gifts.map((item) => item.id), ["phone", "laptop", "extreme-sports"]);
   for (const gift of result.benefits.gifts) assert.deepEqual(gift.passengerIndexes, [1]);
+  assert.match(result.benefits.gifts.find((item) => item.id === "phone").name, /אובדן או גניבת טלפון נייד/);
+  assert.match(result.benefits.gifts.find((item) => item.id === "laptop").name, /אובדן או גניבת מחשב נייד/);
   consistent(result);
+});
+
+test("uniq gifts require baggage and apply only to Migdal", () => {
+  const withoutBaggage = input({ ages: [30], selectedAddons: ["phone"], passengerSelections: { phone: [0] }, baggagePassengerCount: 0 });
+  const noBaggage = calculateClubBenefits("migdal", quote("migdal", withoutBaggage), withoutBaggage, "uniq");
+  assert.deepEqual(noBaggage.benefits.gifts, []);
+  assert.equal(noBaggage.price, quote("migdal", withoutBaggage).price);
+  const withBaggage = input({ ages: [30], selectedAddons: ["baggage"], passengerSelections: { baggage: [0] }, baggagePassengerCount: 1 });
+  const otherInsurer = calculateClubBenefits("harel", quote("harel", withBaggage), withBaggage, "uniq");
+  assert.deepEqual(otherInsurer.benefits.gifts, []);
+  assert.equal(otherInsurer.price, quote("harel", withBaggage).price);
+  consistent(noBaggage);
+  consistent(otherInsurer);
 });
 
 test("HOT gifts baggage to every passenger without adding a premium", () => {
@@ -118,15 +133,67 @@ test("HOT gifts baggage to every passenger without adding a premium", () => {
   }
 });
 
-test("Diners/cal applies all passengers and selected baggage by day", () => {
+test("HOT restores removed rescue as a free gift without a second deduction", () => {
+  const data = input({ ages: [30, 40], selectedAddons: [], baggagePassengerCount: 0, removeRescue: true });
+  for (const insurer of ["harel", "migdal"]) {
+    const original = quote(insurer, data);
+    const result = calculateClubBenefits(insurer, original, data, "hot");
+    const gift = result.benefits.gifts.find((item) => item.id === "rescue");
+    assert.deepEqual(gift.passengerIndexes, [0, 1]);
+    assert.equal(gift.startDate, data.departure);
+    assert.equal(gift.endDate, data.returnDate);
+    assert.equal(result.price, insurer === "harel" ? Math.round(original.price * 85) / 100 : original.price);
+    consistent(result);
+  }
+});
+
+test("Diners/cal applies to one adult and child and selected baggage by day", () => {
   const data = input();
   const original = quote("harel", data);
   const before = structuredClone(original);
   const result = calculateClubBenefits("harel", original, data, "diners_cal");
-  assert.equal(result.price, 52.26);
-  assert.equal(line(result, "base"), 33.75);
-  assert.equal(line(result, "baggage"), 3.51);
+  assert.equal(result.price, 68.15);
+  assert.equal(line(result, "base"), 47.5);
+  assert.equal(line(result, "baggage"), 5.65);
   assert.deepEqual(original, before);
+  consistent(result);
+});
+
+test("Diners/cal gives one adult benefits without a child", () => {
+  for (const [endDate, base, baggage, price] of [
+    ["2026-01-05", 0, 0, 0],
+    ["2026-01-07", 4.5, 0.7, 5.2],
+    ["2026-01-12", 16.25, 2.53, 18.78],
+  ]) {
+    const data = input({ ages: [30], returnDate: endDate, selectedAddons: ["baggage"], passengerSelections: { baggage: [0] }, baggagePassengerCount: 1 });
+    const result = calculateClubBenefits("harel", quote("harel", data), data, "diners_cal");
+    assert.equal(line(result, "base"), base);
+    assert.equal(line(result, "baggage"), baggage);
+    assert.equal(result.price, price);
+    assert.deepEqual(result.benefits.gifts.find((item) => item.id === "baggage").passengerIndexes, [0]);
+    consistent(result);
+  }
+});
+
+test("Diners/cal limits free days and days 6-10 to one adult and one child", () => {
+  const data = input({ ages: [30, 40, 8, 10], selectedAddons: ["baggage"], passengerSelections: { baggage: [0, 1, 2, 3] }, baggagePassengerCount: 4 });
+  const result = calculateClubBenefits("harel", quote("harel", data), data, "diners_cal");
+  assert.equal(line(result, "base"), 72.5);
+  assert.equal(line(result, "baggage"), 11.31);
+  assert.equal(result.price, 83.81);
+  assert.deepEqual(result.benefits.gifts.find((item) => item.id === "baggage").passengerIndexes, [0, 2]);
+  consistent(result);
+  const other = calculateClubBenefits("clal", quote("clal", data), data, "diners_cal");
+  assert.equal(other.price, quote("clal", data).price);
+  assert.deepEqual(other.benefits.gifts, []);
+});
+
+test("Diners/cal does not discount without an adult", () => {
+  const data = input({ ages: [8], selectedAddons: [], baggagePassengerCount: 0 });
+  const original = quote("harel", data);
+  const result = calculateClubBenefits("harel", original, data, "diners_cal");
+  assert.equal(result.price, original.price);
+  assert.deepEqual(result.benefits.gifts, []);
   consistent(result);
 });
 
@@ -143,6 +210,19 @@ test("Hitechzone does not double-discount rescue in the free base days", () => {
   assert.equal(line(result, "base"), 34.5);
   assert.equal(line(result, "baggage"), 7.8);
   assert.equal(line(result, "extremeSports"), 7.5);
+  consistent(result);
+});
+
+test("Harel third-party coverage is included free and does not change the price", () => {
+  const data = input({ ages: [30], selectedAddons: [], baggagePassengerCount: 0 });
+  const original = quote("harel", data);
+  const removed = quote("harel", { ...data, removeThirdParty: true });
+  const coverage = original.priceLines.find((item) => item.id === "thirdParty");
+  assert.equal(coverage.amount, 0);
+  assert.equal(coverage.includedInBase, true);
+  assert.equal(original.price, removed.price);
+  const result = calculateClubBenefits("harel", original, data, "hitechzone", { calConfirmed: true });
+  assert.ok(result.benefits.messages.some((item) => item.message === "Harel third-party coverage is included at no additional cost." && item.status === "applied"));
   consistent(result);
 });
 
@@ -207,6 +287,22 @@ test("MAMI discounts only adults including age 18", () => {
   consistent(result);
 });
 
+test("MAMI discounts only adult base premiums, not add-ons, across insurers", () => {
+  const data = input({ ages: [17, 18, 30], selectedAddons: ["phone"], passengerSelections: { phone: [0, 1, 2] }, baggagePassengerCount: 0 });
+  for (const insurer of ["migdal", "harel", "menora", "passportcard", "clal", "phoenix", "direct"]) {
+    const original = quote(insurer, data);
+    const result = calculateClubBenefits(insurer, original, data, "mami");
+    const adultBaseCents = [18, 30].reduce((sum, age) => {
+      const passenger = quote(insurer, { ...data, ages: [age], planSelectionAges: data.ages, selectedAddons: [], passengerSelections: undefined });
+      return sum + Math.round(passenger.basePremium * 100);
+    }, 0);
+    assert.equal(Math.round(result.benefits.savings * 100), Math.round(adultBaseCents * 0.15), insurer);
+    assert.equal(result.addOnsPremium, original.addOnsPremium, insurer);
+    assert.equal(result.coveragePremium, original.coveragePremium, insurer);
+    consistent(result);
+  }
+});
+
 test("uniq discounts only selected bonuses for baggage purchasers", () => {
   const data = input({
     ages: [30, 17],
@@ -249,6 +345,20 @@ test("El Al requires eligibility and never makes the price negative", () => {
   consistent(result);
 });
 
+test("El Al applies $10 only to Phoenix after confirmation", () => {
+  const data = input({ ages: [30], selectedAddons: ["phone"], passengerSelections: { phone: [0] }, baggagePassengerCount: 0 });
+  for (const insurer of ["phoenix", "harel", "migdal", "clal"]) {
+    const original = quote(insurer, data);
+    for (const confirmed of [true, false]) {
+      const result = calculateClubBenefits(insurer, original, data, "elal", { elalEligible: confirmed });
+      assert.equal(Math.round((original.price - result.price) * 100), insurer === "phoenix" && confirmed ? 1000 : 0);
+      if (insurer === "phoenix" && confirmed)
+        assert.ok(result.benefits.messages.some((item) => item.message === "The El Al discount requires a flight ticket purchased from El Al."));
+      consistent(result);
+    }
+  }
+});
+
 test("rejects stale quotes and leaves their prices untouched", () => {
   const data = input();
   const original = quote("harel", data);
@@ -275,7 +385,30 @@ test("HOT Harel discounts extreme sports sequentially after the total", () => {
   consistent(result);
 });
 
-test("Hever Phoenix preserves broader cancellation and discounts paid add-ons", () => {
+test("Hever discounts paid phone coverage without changing base across insurers", () => {
+  const data = input({ ages: [30], returnDate: "2026-01-07", selectedAddons: ["phone"], passengerSelections: { phone: [0] }, baggagePassengerCount: 0 });
+  for (const insurer of ["migdal", "harel", "menora", "passportcard", "clal", "phoenix", "direct"]) {
+    const original = quote(insurer, data);
+    const result = calculateClubBenefits(insurer, original, data, "hever");
+    assert.equal(result.basePremium, original.basePremium, insurer);
+    assert.equal(result.benefits.savings, Math.round(original.addOnsPremium * 15) / 100, insurer);
+    assert.ok(result.benefits.gifts.some((item) => item.id === "operational-cancellation"), insurer);
+    consistent(result);
+  }
+});
+
+test("Hever Phoenix gives baggage and medical cancellation to all passengers", () => {
+  const data = input({ ages: [30, 40], selectedAddons: [], baggagePassengerCount: 0 });
+  const original = quote("phoenix", data);
+  const result = calculateClubBenefits("phoenix", original, data, "hever");
+  assert.equal(result.price, original.price);
+  for (const id of ["baggage", "medical-cancellation", "operational-cancellation"]) {
+    assert.deepEqual(result.benefits.gifts.find((item) => item.id === id).passengerIndexes, [0, 1]);
+  }
+  consistent(result);
+});
+
+test("Hever Phoenix gives selected cancellation and baggage free and discounts other add-ons", () => {
   const data = input({
     ages: [20],
     selectedAddons: ["baggage", "cancellation", "phone"],
@@ -288,16 +421,11 @@ test("Hever Phoenix preserves broader cancellation and discounts paid add-ons", 
     data,
     "hever",
   );
-  assert.equal(result.price, 36.45);
+  assert.equal(result.price, 30.5);
   assert.equal(line(result, "baggage"), 0);
-  assert.equal(line(result, "cancellation"), 5.95);
+  assert.equal(line(result, "cancellation"), 0);
   assert.equal(line(result, "phone"), 8.5);
-  assert.ok(
-    result.benefits.messages.some(
-      (item) =>
-        item.status === "unimplemented" && item.message.includes("medical-only"),
-    ),
-  );
+  assert.ok(result.benefits.messages.some((item) => item.status === "applied" && item.message === "Selected Phoenix cancellation and baggage premiums are free."));
   consistent(result);
 });
 
@@ -366,6 +494,36 @@ test("doctor club and HOT total discounts use actual paid lines", () => {
   }
 });
 
+test("doctors Harel rescue is free whether included or removed", () => {
+  for (const removeRescue of [false, true]) {
+    const data = input({ ages: [30, 40], selectedAddons: ["phone"], passengerSelections: { phone: [0] }, baggagePassengerCount: 0, removeRescue });
+    const original = quote("harel", data);
+    const result = calculateClubBenefits("harel", original, data, "doctors");
+    const afterRescue = removeRescue ? original.price : original.price - 4;
+    assert.equal(result.price, Math.round(afterRescue * 80) / 100);
+    if (removeRescue) {
+      assert.deepEqual(result.benefits.gifts.find((item) => item.id === "rescue").passengerIndexes, [0, 1]);
+    } else {
+      assert.equal(result.benefits.messages.find((item) => item.message === "Selected rescue coverage: free premium.").savings, 4);
+    }
+    assert.ok(!result.benefits.messages.some((item) => item.message.includes("estimated $0.20")));
+    consistent(result);
+  }
+});
+
+test("doctors club Harel provides rescue and discounts the remaining price", () => {
+  for (const removed of [false, true]) {
+    const data = input({ ages: [30], selectedAddons: ["phone"], passengerSelections: { phone: [0] }, baggagePassengerCount: 0, removeRescue: removed });
+    const original = quote("harel", data);
+    const result = calculateClubBenefits("harel", original, data, "doctors");
+    const eligible = Math.round(original.price * 100) - (removed ? 0 : 200);
+    assert.equal(Math.round(result.price * 100), eligible - Math.round(eligible * 0.2));
+    if (removed) assert.deepEqual(result.benefits.gifts.find((gift) => gift.id === "rescue").passengerIndexes, [0]);
+    else assert.ok(result.benefits.messages.some((item) => item.message === "Selected rescue coverage: free premium." && item.savings === 2));
+    consistent(result);
+  }
+});
+
 test("teachers card discount is sequential after daily add-on discounts", () => {
   const data = input();
   const original = quote("harel", data);
@@ -411,7 +569,7 @@ test("teachers apply day-nine and family discounts to selected passengers sequen
   const result = calculateClubBenefits("harel", original, data, "teachers");
   assert.equal(line(original, "phone"), 48);
   assert.equal(result.benefits.messages.find((item) => item.message.includes("phone for covered days")).savings, 1.44);
-  assert.equal(line(result, "phone"), 44.23);
+  assert.equal(line(result, "phone"), 46.56);
   assert.ok(result.benefits.messages.some((item) => item.message.startsWith("15% off eligible additional")));
   consistent(result);
 });
@@ -495,11 +653,11 @@ test("teachers day-nine, additional family and card discounts are sequential", (
   const withCard = calculateClubBenefits("harel", original, data, "teachers", {
     clubCardConfirmed: true,
   });
-  assert.equal(withoutCard.price, 22.95);
-  assert.equal(withCard.price, 21.8);
+  assert.equal(withoutCard.price, 23.59);
+  assert.equal(withCard.price, 22.41);
   assert.equal(
     withoutCard.benefits.messages.find((item) => item.message.startsWith("15% off eligible additional")).savings,
-    2.55,
+    1.91,
   );
   assert.equal(
     Math.round(original.price * 100) - Math.round(withoutCard.benefits.savings * 100),
@@ -518,10 +676,10 @@ test("teachers nine-day benefit uses each eligible passenger's remaining age-bas
     baggagePassengerCount: 0,
   });
   const result = calculateClubBenefits("harel", quote("harel", data), data, "teachers");
-  assert.equal(result.price, 13.75);
+  assert.equal(result.price, 14.24);
   assert.equal(
     result.benefits.messages.find((item) => item.message.startsWith("15% off eligible additional")).savings,
-    1.29,
+    0.8,
   );
   consistent(result);
 });
@@ -535,9 +693,30 @@ test("teachers additional benefit includes paid coverage without discounting exc
     baggagePassengerCount: 0,
   });
   const result = calculateClubBenefits("clal", quote("clal", data), data, "teachers");
-  assert.equal(line(result, "rescue"), 0.91);
+  assert.equal(line(result, "rescue"), 0.94);
   assert.equal(line(result, "devices"), 2.44);
-  assert.equal(result.price, 3.35);
+  assert.equal(result.price, 3.38);
+  consistent(result);
+});
+
+test("teachers additional benefit covers only one additional adult and all children", () => {
+  const data = input({ ages: [30, 40, 50, 5, 10], returnDate: "2026-01-01", selectedAddons: ["phone"], passengerSelections: { phone: [0, 1, 2, 3, 4] }, baggagePassengerCount: 0 });
+  const original = quote("harel", data);
+  const result = calculateClubBenefits("harel", original, data, "teachers");
+  assert.equal(line(original, "phone"), 8);
+  assert.equal(line(result, "phone"), 7.28);
+  assert.equal(result.benefits.messages.find((item) => item.message.startsWith("15% off eligible additional")).savings, 0.72);
+  consistent(result);
+});
+
+test("teachers restore removed third-party coverage as a free gift", () => {
+  const data = input({ ages: [30], selectedAddons: [], baggagePassengerCount: 0, removeThirdParty: true });
+  const original = quote("migdal", data);
+  const result = calculateClubBenefits("migdal", original, data, "teachers");
+  const gift = result.benefits.gifts.find((item) => item.id === "third-party");
+  assert.deepEqual(gift.passengerIndexes, [0]);
+  assert.equal(gift.startDate, data.departure);
+  assert.equal(gift.endDate, data.returnDate);
   consistent(result);
 });
 
@@ -558,7 +737,7 @@ test("teacher family condition is present even for invalid or stale quotes", () 
   const original = quote("harel", data);
   const result = calculateClubBenefits("harel", original, { ...data, ages: [10] }, "teachers");
   assert.equal(result.price, original.price);
-  const familyNote = "Teachers additional-traveler benefit: the card holder and all eligible additional travelers must be family. The first adult is the card holder; up to two other adults and all children under 18 are eligible.";
+  const familyNote = "Teachers additional-traveler benefit: the card holder and all eligible additional travelers must be family. The first adult is the card holder; up to one other adult and all children under 18 are eligible.";
   assert.ok(result.benefits.messages.some((item) => item.message === familyNote));
   assert.ok(result.benefits.messages.some((item) => item.status === "unimplemented"));
   const invalid = { ...data, departure: "invalid" };
@@ -612,7 +791,7 @@ test("Migdal teachers third-party benefit subtracts the documented daily compone
   consistent(result);
 });
 
-test("removed rescue and third party are never presented as newly added coverage", () => {
+test("Hitechzone restores removed rescue and third party as free gifts", () => {
   const data = input({ removeRescue: true, removeThirdParty: true });
   const result = calculateClubBenefits(
     "harel",
@@ -621,15 +800,28 @@ test("removed rescue and third party are never presented as newly added coverage
     "hitechzone",
     { calConfirmed: true },
   );
-  assert.ok(
-    result.benefits.messages.some((item) =>
-      item.message.includes("Rescue was removed"),
-    ),
-  );
-  assert.ok(
-    result.benefits.messages.some((item) =>
-      item.message.includes("Third-party coverage was removed"),
-    ),
-  );
+  for (const id of ["rescue", "third-party"]) {
+    const gift = result.benefits.gifts.find((item) => item.id === id);
+    assert.deepEqual(gift.passengerIndexes, [0, 1, 2]);
+    assert.equal(gift.startDate, data.departure);
+    assert.equal(gift.endDate, data.returnDate);
+  }
   consistent(result);
+});
+
+test("Hitechzone first five base days require a confirmed Cal card", () => {
+  const data = input({ ages: [30], selectedAddons: ["extremeSports"], baggagePassengerCount: 0 });
+  const original = quote("harel", data);
+  const confirmed = calculateClubBenefits("harel", original, data, "hitechzone", { calConfirmed: true });
+  const declined = calculateClubBenefits("harel", original, data, "hitechzone", { calConfirmed: false });
+  assert.equal(confirmed.price, 14);
+  assert.equal(declined.price, 25.5);
+  assert.equal(line(confirmed, "extremeSports"), 2.5);
+  assert.equal(line(declined, "extremeSports"), 2.5);
+  assert.ok(declined.benefits.messages.some((item) => item.message.includes("require confirmation")));
+  const other = calculateClubBenefits("migdal", quote("migdal", data), data, "hitechzone", { calConfirmed: true });
+  assert.equal(other.price, quote("migdal", data).price);
+  consistent(confirmed);
+  consistent(declined);
+  consistent(other);
 });

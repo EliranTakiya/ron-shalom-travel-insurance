@@ -674,6 +674,8 @@ export function calculateInsurerQuote(
   if (underwritingRequired) warnings.push("המחיר משוער בלבד ואחד הנוסעים נדרש לחיתום רפואי.");
   if (input.removeThirdParty) {
     priceLines.push({ id: "thirdPartyRemoved", name: "צד ג׳", description: "הכיסוי הוסר; בחלק מהחברות הוא ניתן ללא תוספת מחיר.", amount: 0 });
+  } else if (insurerId === "harel") {
+    priceLines.push({ id: "thirdParty", name: "חבות כלפי צד ג׳", description: "כלול ללא תוספת תשלום", amount: 0, includedInBase: true });
   }
   const totalCents = baseCents + rescueCents + addOnsCents;
   return {

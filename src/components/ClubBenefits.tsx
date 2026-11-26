@@ -7,7 +7,7 @@ import type {
 export const clubs: { id: ClubId; name: string }[] = [
   { id: "hever", name: "חבר" },
   { id: "hot", name: "הוט" },
-  { id: "doctors", name: "מועדון הרופאים" },
+  { id: "doctors", name: "יחד מועדון צרכנות לרופאים בע״מ" },
   { id: "adif", name: "עדיף" },
   { id: "teachers", name: "מועדון המורים" },
   { id: "mami", name: "מאמי" },
@@ -58,6 +58,8 @@ function translate(message: string): string {
       "כיסוי צד ג׳ הוסר; ההטבה אינה מוסיפה אותו.",
     "Selected third-party coverage: free premium.":
       "פרמיית כיסוי צד ג׳ שנבחר ללא תשלום.",
+    "Harel third-party coverage is included at no additional cost.":
+      "כיסוי צד ג׳ בהראל כלול ללא תוספת תשלום.",
     "Third-party benefit is conditional on the insurer's actual coverage; no additional coverage was added or valued.":
       "הטבת צד ג׳ תלויה בכיסוי בפועל של החברה; לא נוסף או תומחר כיסוי נוסף.",
     "Operational cancellation may be available free subject to eligibility and terms; it is not added or guaranteed by this calculation.":
@@ -90,8 +92,8 @@ function translate(message: string): string {
       "הנחה של 20% מהסכום ללא ביטול נסיעה.",
     "Free baggage days apply only to baggage already selected in the quote; coverage was not added for other passengers.":
       "ימי כבודה ללא תשלום חלים רק על הכבודה שנבחרה; לא נוסף כיסוי לנוסעים אחרים.",
-    "Teachers additional-traveler benefit: the card holder and all eligible additional travelers must be family. The first adult is the card holder; up to two other adults and all children under 18 are eligible.":
-      "ההטבה לנוסעים נוספים מיועדת לבני משפחה בלבד. הבגיר הראשון נחשב בעל הכרטיס; זכאים עד שני בגירים נוספים וילדיהם מתחת לגיל 18 ללא הגבלת מספר.",
+    "Teachers additional-traveler benefit: the card holder and all eligible additional travelers must be family. The first adult is the card holder; up to one other adult and all children under 18 are eligible.":
+      "ההטבה לנוסעים נוספים מיועדת לבני משפחה בלבד. הבגיר הראשון נחשב בעל הכרטיס; זכאי בגיר נוסף אחד, ועד שני בגירים בסך הכול, וילדיהם מתחת לגיל 18 ללא הגבלת מספר.",
     "15% off remaining base and selected baggage from day 9.":
       "הנחה של 15% מיתרת הבסיס והכבודה שנבחרה מהיום התשיעי.",
     "The day-nine discount for other add-ons is not calculated: daily allocation of capped or flat premiums needs clarification.":
@@ -127,13 +129,23 @@ function translate(message: string): string {
       "הטבות הכבודה חלות רק על הכבודה שנבחרה; לא נוסף כיסוי לנוסעים אחרים.",
     "$10 El Al discount, capped at the quote price.":
       "הנחת אל על בסך 10 דולר, עד למחיר ההצעה.",
+    "The El Al discount requires a flight ticket purchased from El Al.":
+      "קבלת ההטבה מותנית ברכישת כרטיס טיסה מאל על.",
     "El Al eligibility was not met.": "תנאי הזכאות להטבת אל על לא התקיים.",
     "The $10 El Al discount requires eligibility confirmation.":
       "הנחת אל על בסך 10 דולר מחייבת אישור זכאות.",
     "Unknown club; no discount was calculated.":
       "מועדון לא מוכר; לא חושבה הנחה.",
+    "Diners/cal requires at least one adult.":
+      "הטבת דיינרס/כאל מחייבת לפחות בגיר אחד.",
   };
   if (exact[message]) return exact[message];
+  const dinersAdult = message.match(/^Diners\/cal applies to the first adult only: passenger (\d+)\.$/);
+  if (dinersAdult) return `ההטבה חושבה לבגיר הראשון בלבד: נוסע ${dinersAdult[1]}.`;
+  const dinersPassengers = message.match(/^Diners\/cal applies to the first adult and first child only: passengers (\d+) and (\d+)\.$/);
+  if (dinersPassengers) return `ההטבה חושבה לבגיר ולילד הראשונים בלבד: נוסעים ${dinersPassengers[1]} ו־${dinersPassengers[2]}.`;
+  const dinersFreeBase = message.match(/^Diners\/cal: base days 1-(\d+) free for eligible passengers\.$/);
+  if (dinersFreeBase) return `ימי הבסיס 1-${dinersFreeBase[1]} ללא תשלום לנוסעים הזכאים.`;
   if (/^15% off .+ for covered days from day 9\.$/.test(message))
     return "הנחה של 15% על ההרחבה עבור ימי הכיסוי החל מהיום התשיעי.";
   if (/^Teachers day-nine discount for .+ is not calculated:/.test(message))
@@ -242,7 +254,7 @@ export default function ClubBenefitsDetails({
       )}
       {benefits.clubId === "teachers" && passengerCount > 1 && (
         <p className="mt-2 font-bold text-amber-900">
-          הטבת נוסעים נוספים מיועדת לבני משפחה בלבד: עד שני בגירים נוספים וילדיהם מתחת לגיל 18 ללא הגבלת מספר.
+          הטבת נוסעים נוספים מיועדת לבני משפחה בלבד: עד שני בגירים בסך הכול, כולל בעל הכרטיס, וילדיהם מתחת לגיל 18 ללא הגבלת מספר.
         </p>
       )}
       {benefits.messages.length === 0 && (

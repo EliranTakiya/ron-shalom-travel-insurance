@@ -392,7 +392,7 @@ function CheckoutContent() {
               <p className="mt-4 text-gray-500">לא נבחרו הרחבות</p>
             )}
             {selectedAddons.includes("extremeSports") && <p className="mt-3 text-sm text-gray-700">ספורט אתגרי: {formatDate(extremeSportsStart)} - {formatDate(extremeSportsEnd)}</p>}
-            {(removeThirdParty || removeRescue) && <p className="mt-3 text-sm text-amber-900">הוסר מהבקשה: {[removeThirdParty && "צד ג׳", removeRescue && "איתור וחילוץ"].filter(Boolean).join(", ")}</p>}
+            {(removeThirdParty || removeRescue) && <p className="mt-3 text-sm text-amber-900">הוסר מהבקשה: {[removeThirdParty && "צד ג׳", removeRescue && "איתור וחילוץ"].filter(Boolean).join(", ")}{removeThirdParty && quote.benefits?.gifts.some((gift) => gift.id === "third-party") ? ". צד ג׳ נוסף בהטבת המועדון כמפורט בהצעה" : ""}{removeRescue && quote.benefits?.gifts.some((gift) => gift.id === "rescue") ? ". איתור וחילוץ נוסף בהטבת המועדון כמפורט בהצעה" : ""}.</p>}
             {(["baggage", "phone", "laptop"] as const).filter((id) => selectedAddons.includes(id) && quoteInput.passengerSelections[id]?.length).map((id) => <p key={id} className="mt-2 text-sm text-gray-700">{addonNames[id]}: נוסעים {(quoteInput.passengerSelections[id] ?? []).map((index) => index + 1).join(", ")} לפי סדר הנוסעים המוצג</p>)}
           </div>
 

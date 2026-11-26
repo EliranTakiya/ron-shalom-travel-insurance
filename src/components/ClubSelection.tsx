@@ -22,7 +22,7 @@ export default function ClubSelection({
       : club === "hitechzone"
         ? "האם יש ברשותכם כרטיס כאל של הייטקזון?"
         : club === "elal"
-          ? "האם הנסיעה עומדת בתנאי הזכאות להטבת אל על, כולל טיסה מזכה של אל על?"
+          ? "קבלת ההטבה מותנית ברכישת כרטיס טיסה מאל על. האם להשתמש בהטבה?"
           : "";
   const answerKey =
     club === "teachers"

@@ -401,8 +401,8 @@ function ResultsContent() {
               )}
               {(removeThirdParty || removeRescue) && (
                 <div className="mt-2 flex flex-wrap gap-1 text-xs text-amber-800">
-                  {removeThirdParty && <span className="rounded-full bg-amber-100 px-2 py-1">צד ג׳ הוסר</span>}
-                  {removeRescue && <span className="rounded-full bg-amber-100 px-2 py-1">איתור וחילוץ הוסר</span>}
+                  {removeThirdParty && <span className="rounded-full bg-amber-100 px-2 py-1">צד ג׳ הוסר בבחירה{club === "teachers" ? "; נוסף בהטבת המועדון כמפורט בהצעות" : club === "hitechzone" ? "; בהראל נוסף במתנה" : ""}</span>}
+                  {removeRescue && <span className="rounded-full bg-amber-100 px-2 py-1">איתור וחילוץ הוסר בבחירה{club === "hot" ? "; בהראל ובמגדל נוסף במתנה" : club === "doctors" || club === "hitechzone" ? "; בהראל נוסף במתנה" : ""}</span>}
                 </div>
               )}
 
