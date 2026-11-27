@@ -277,23 +277,29 @@ test("teachers first eight days use full-trip base rates across insurers", () =>
 test("MAMI discounts only adults including age 18", () => {
   const data = input({ selectedAddons: [] });
   const result = calculateClubBenefits(
-    "harel",
-    quote("harel", data),
+    "menora",
+    quote("menora", data),
     data,
     "mami",
   );
-  assert.equal(result.benefits.savings, 7.5);
-  assert.equal(result.price, 67.5);
+  assert.equal(result.benefits.savings, 5.85);
+  assert.equal(result.price, 52.65);
   consistent(result);
 });
 
-test("MAMI discounts only adult base premiums, not add-ons, across insurers", () => {
+test("MAMI applies only to Menora and only to adult base premiums", () => {
   const data = input({ ages: [17, 18, 30], selectedAddons: ["phone"], passengerSelections: { phone: [0, 1, 2] }, baggagePassengerCount: 0 });
   for (const insurer of ["migdal", "harel", "menora", "passportcard", "clal", "phoenix", "direct"]) {
     const original = quote(insurer, data);
     const result = calculateClubBenefits(insurer, original, data, "mami");
+    if (insurer !== "menora") {
+      assert.equal(result.price, original.price, insurer);
+      assert.equal(result.benefits.savings, 0, insurer);
+      assert.ok(result.benefits.messages.some((item) => item.status === "not_applicable"), insurer);
+      continue;
+    }
     const adultBaseCents = [18, 30].reduce((sum, age) => {
-      const passenger = quote(insurer, { ...data, ages: [age], planSelectionAges: data.ages, selectedAddons: [], passengerSelections: undefined });
+      const passenger = quote(insurer, { ...data, ages: [age], selectedAddons: [], passengerSelections: undefined });
       return sum + Math.round(passenger.basePremium * 100);
     }, 0);
     assert.equal(Math.round(result.benefits.savings * 100), Math.round(adultBaseCents * 0.15), insurer);
@@ -385,30 +391,37 @@ test("HOT Harel discounts extreme sports sequentially after the total", () => {
   consistent(result);
 });
 
-test("Hever discounts paid phone coverage without changing base across insurers", () => {
+test("Hever phone discount applies only to PassportCard add-ons, not base", () => {
   const data = input({ ages: [30], returnDate: "2026-01-07", selectedAddons: ["phone"], passengerSelections: { phone: [0] }, baggagePassengerCount: 0 });
-  for (const insurer of ["migdal", "harel", "menora", "passportcard", "clal", "phoenix", "direct"]) {
+  for (const insurer of ["passportcard", "migdal", "harel", "menora", "clal", "phoenix", "direct"]) {
     const original = quote(insurer, data);
     const result = calculateClubBenefits(insurer, original, data, "hever");
-    assert.equal(result.basePremium, original.basePremium, insurer);
-    assert.equal(result.benefits.savings, Math.round(original.addOnsPremium * 15) / 100, insurer);
-    assert.ok(result.benefits.gifts.some((item) => item.id === "operational-cancellation"), insurer);
+    if (insurer === "passportcard") {
+      assert.equal(result.basePremium, original.basePremium);
+      assert.equal(result.benefits.savings, Math.round(original.addOnsPremium * 15) / 100);
+      assert.ok(result.benefits.gifts.some((item) => item.id === "operational-cancellation"));
+    } else {
+      assert.equal(result.price, original.price, insurer);
+      assert.equal(result.benefits.savings, 0, insurer);
+      assert.ok(!result.benefits.gifts.some((item) => item.id === "operational-cancellation"), insurer);
+    }
     consistent(result);
   }
 });
 
-test("Hever Phoenix gives baggage and medical cancellation to all passengers", () => {
+test("Hever Phoenix gives only baggage and medical cancellation gifts", () => {
   const data = input({ ages: [30, 40], selectedAddons: [], baggagePassengerCount: 0 });
   const original = quote("phoenix", data);
   const result = calculateClubBenefits("phoenix", original, data, "hever");
   assert.equal(result.price, original.price);
-  for (const id of ["baggage", "medical-cancellation", "operational-cancellation"]) {
+  for (const id of ["baggage", "medical-cancellation"]) {
     assert.deepEqual(result.benefits.gifts.find((item) => item.id === id).passengerIndexes, [0, 1]);
   }
+  assert.ok(!result.benefits.gifts.some((item) => item.id === "operational-cancellation"));
   consistent(result);
 });
 
-test("Hever Phoenix gives selected cancellation and baggage free and discounts other add-ons", () => {
+test("Hever Phoenix gives selected cancellation and baggage free without the PassportCard discount", () => {
   const data = input({
     ages: [20],
     selectedAddons: ["baggage", "cancellation", "phone"],
@@ -421,10 +434,10 @@ test("Hever Phoenix gives selected cancellation and baggage free and discounts o
     data,
     "hever",
   );
-  assert.equal(result.price, 30.5);
+  assert.equal(result.price, 32);
   assert.equal(line(result, "baggage"), 0);
   assert.equal(line(result, "cancellation"), 0);
-  assert.equal(line(result, "phone"), 8.5);
+  assert.equal(line(result, "phone"), 10);
   assert.ok(result.benefits.messages.some((item) => item.status === "applied" && item.message === "Selected Phoenix cancellation and baggage premiums are free."));
   consistent(result);
 });
@@ -762,13 +775,13 @@ test("teachers use the group plan when pricing additional travelers", () => {
   consistent(result);
 });
 
-test("MAMI discounts adult premiums using the group's Migdal plan", () => {
+test("MAMI does not discount Migdal because the benefit is Menora-only", () => {
   const data = input({ ages: [30, 65, 10], returnDate: "2026-01-03", selectedAddons: [], baggagePassengerCount: 0 });
   const original = quote("migdal", data);
   const result = calculateClubBenefits("migdal", original, data, "mami");
-  const adultBase = [30, 65].reduce((sum, age) => sum + quote("migdal", { ...data, ages: [age], planSelectionAges: data.ages }).basePremium, 0);
-  assert.equal(result.benefits.savings, Math.round(adultBase * 15) / 100);
-  assert.ok(result.benefits.messages.some((item) => item.status === "applied" && item.message.includes("aged 18")));
+  assert.equal(result.benefits.savings, 0);
+  assert.equal(result.price, original.price);
+  assert.ok(result.benefits.messages.some((item) => item.status === "not_applicable"));
   consistent(result);
 });
 

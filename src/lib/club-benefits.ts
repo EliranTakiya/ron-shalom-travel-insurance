@@ -394,15 +394,18 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
 
   switch (clubId) {
     case "hever":
-      gift("operational-cancellation", "ביטול עקב פעילות מבצעית במתנה", undefined, null, null);
-      free(["operationalCancellation"], "Selected operational cancellation premium is free.");
-      note("conditional", "Cancellation gift coverage dates and expiry require confirmation with the insurer.");
-      if (insurerId === "phoenix") {
+      if (insurerId === "passportcard") {
+        gift("operational-cancellation", "ביטול עקב פעילות מבצעית במתנה", undefined, null, null);
+        free(["operationalCancellation"], "Selected operational cancellation premium is free.");
+        note("conditional", "Cancellation gift coverage dates and expiry require confirmation with the insurer.");
+        percent(addonIndexes(), 15, "15% off remaining paid add-ons.");
+      } else if (insurerId === "phoenix") {
         free(["baggage", "cancellation"], "Selected Phoenix cancellation and baggage premiums are free.");
         gift("baggage", "כיסוי כבודה במתנה לכל הנוסעים");
         gift("medical-cancellation", "ביטול וקיצור נסיעה מסיבות רפואיות במתנה", undefined, null, null);
+      } else {
+        note("not_applicable", "Hever benefits are specified only for PassportCard and Phoenix.");
       }
-      percent(addonIndexes(), 15, "15% off remaining paid add-ons.");
       break;
     case "hot":
       if (insurerId === "clal")
@@ -701,6 +704,10 @@ export function calculateClubBenefits<Quote extends ClubQuote>(
       break;
     }
     case "mami": {
+      if (insurerId !== "menora") {
+        note("not_applicable", "The MAMI base discount applies only to Menora.");
+        break;
+      }
       const singleQuotes = input.ages.map((age) =>
         quoteFor(insurerId, {
           ...input,

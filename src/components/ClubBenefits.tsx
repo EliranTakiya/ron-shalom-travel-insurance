@@ -66,6 +66,10 @@ function translate(message: string): string {
       "ביטול עקב פעילות מבצעית עשוי להינתן ללא תשלום בכפוף לזכאות ולתנאים; החישוב אינו מוסיף או מבטיח כיסוי זה.",
     "Selected Phoenix cancellation and baggage premiums are free.":
       "פרמיות ביטול וכבודה שנבחרו בפניקס ללא תשלום.",
+    "The MAMI base discount applies only to Menora.":
+      "הנחת MAMI על כיסוי הבסיס חלה במנורה בלבד.",
+    "Hever benefits are specified only for PassportCard and Phoenix.":
+      "הטבות חבר חלות בפספורטכארד ובהפניקס בלבד.",
     "15% off remaining paid add-ons.": "הנחה של 15% מיתרת ההרחבות בתשלום.",
     "25% off the total.": "הנחה של 25% מהסכום הכולל.",
     "22% off the total.": "הנחה של 22% מהסכום הכולל.",
